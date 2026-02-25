@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// (Aquí arriba se queda igual tu generator y tu datasource)
+
+model Prospecto {
+  id              String   @id @default(uuid())
+  nombre          String
+  telefono        String
+  email           String?
+  ciudadPropiedad String
+  mensaje         String?
+  fechaReunion    String?  // NUEVO: El día que eligió el cliente
+  horaReunion     String?  // NUEVO: La hora que eligió el cliente
+  estado          String   @default("NUEVO")
+  fechaCreacion   DateTime @default(now())
+}
+
+// NUEVA TABLA: El calendario de tu tío
+model Disponibilidad {
+  id         String   @id @default(uuid())
+  fecha      String   // Ejemplo: "2026-03-01"
+  hora       String   // Ejemplo: "09:00"
+  estaLibre  Boolean  @default(true) // Si tu tío lo cambia a 'false', se bloquea
+}
