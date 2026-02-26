@@ -29,3 +29,19 @@ model Disponibilidad {
   hora       String   // Ejemplo: "09:00"
   estaLibre  Boolean  @default(true) // Si tu tío lo cambia a 'false', se bloquea
 }
+
+enum RolUsuario {
+  ADMIN
+  AMA_LLAVES
+  ASEO
+  PROPIETARIO
+}
+
+model Usuario {
+  id        String     @id @default(uuid())
+  nombre    String     
+  username  String     @unique 
+  password  String     
+  rol       RolUsuario 
+  createdAt DateTime   @default(now())
+}
