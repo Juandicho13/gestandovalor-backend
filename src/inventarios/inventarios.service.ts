@@ -11,7 +11,7 @@ export class InventariosService {
 
   findAll() {
     return this.prisma.inventario.findMany({
-      include: { propiedad: { select: { nombre: true } } }
+      include: { propiedad: { select: { titulo: true } } }
     });
   }
 

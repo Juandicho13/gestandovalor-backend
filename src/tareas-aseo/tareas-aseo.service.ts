@@ -1,26 +1,32 @@
 import { Injectable } from '@nestjs/common';
-import { CreateTareasAseoDto } from './dto/create-tareas-aseo.dto';
-import { UpdateTareasAseoDto } from './dto/update-tareas-aseo.dto';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class TareasAseoService {
-  create(createTareasAseoDto: CreateTareasAseoDto) {
-    return 'This action adds a new tareasAseo';
+  constructor(private prisma: PrismaService) {}
+
+  create(data: any) {
+    return this.prisma.tareasAseo.create({ data });
   }
 
   findAll() {
-    return `This action returns all tareasAseo`;
+    return this.prisma.tareasAseo.findMany({
+      include: {
+          propiedad: { select: { titulo: true } }, // <-- Cambiamos nombre por titulo
+          empleado: { select: { nombre: true } } // (El empleado sí sigue teniendo nombre, ese déjalo igual)
+      }
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} tareasAseo`;
+  findOne(id: string) {
+    return this.prisma.tareasAseo.findUnique({ where: { id } });
   }
 
-  update(id: number, updateTareasAseoDto: UpdateTareasAseoDto) {
-    return `This action updates a #${id} tareasAseo`;
+  update(id: string, data: any) {
+    return this.prisma.tareasAseo.update({ where: { id }, data });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} tareasAseo`;
+  remove(id: string) {
+    return this.prisma.tareasAseo.delete({ where: { id } });
   }
 }

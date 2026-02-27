@@ -61,27 +61,44 @@ model Usuario {
 // ==========================================
 
 model Propiedad {
-  id                  String       @id @default(uuid())
-  nombre              String
-  ubicacion           String
+  id                  String   @id @default(uuid())
   
-  // Relación: ¿Quién es el dueño?
-  propietario_id      String?
-  propietario         Usuario?     @relation("PropietarioPropiedad", fields: [propietario_id], references: [id])
-  
+  // 1. Describe tu espacio
+  tipo_propiedad      String?  // Ej: Apartamento, Casa, Loft
+  tipo_alojamiento    String?  // Ej: Un alojamiento entero
+  pais                String?
+  direccion           String?
+  ciudad              String?
+  departamento        String?
+  capacidad_huespedes Int?
+  habitaciones        Int?
+  camas               Int?
+  banos               Int?
+
+  // 2. Haz que destaque
+  comodidades         String[] // Lista de strings: ["Wifi", "Cocina", "TV"]
+  fotos               String[] // Lista de URLs de fotos
+  titulo              String?
+  descripcion         String?
+
+  // 3. Terminar y publicar
+  precio_noche        Float?
+  descuentos          Json?    // Para guardar promociones estructuradas
+  seguridad           String[] // ["Cámara de seguridad exterior"]
+
+  // Operación interna (Lo que ven los empleados)
   wifi_red            String?
   wifi_pass           String?
   cerradura_codigo    String?
-  capacidad_huespedes Int          @default(2)
-  habitaciones        Int          @default(1)
-  banos               Int          @default(1)
-  foto_url            String?
-  created_at          DateTime     @default(now())
-
-  // Relaciones hacia abajo
+  
+  // Relaciones
+  propietario_id      String?
+  propietario         Usuario? @relation("PropietarioPropiedad", fields: [propietario_id], references: [id])
   inventario          Inventario?
   reservas            Reserva[]
-  tareas              TareasAseo[]
+  tareas_aseo         TareasAseo[]
+
+  created_at          DateTime @default(now())
 }
 
 model Inventario {
