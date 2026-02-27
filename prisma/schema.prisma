@@ -7,7 +7,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// (Aquí arriba se queda igual tu generator y tu datasource)
+// ==========================================
+// 1. TABLAS DEL LANDING PAGE (Ventas)
+// ==========================================
 
 model Prospecto {
   id              String   @id @default(uuid())
@@ -16,19 +18,22 @@ model Prospecto {
   email           String?
   ciudadPropiedad String
   mensaje         String?
-  fechaReunion    String?  // NUEVO: El día que eligió el cliente
-  horaReunion     String?  // NUEVO: La hora que eligió el cliente
+  fechaReunion    String?  
+  horaReunion     String?  
   estado          String   @default("NUEVO")
   fechaCreacion   DateTime @default(now())
 }
 
-// NUEVA TABLA: El calendario de tu tío
 model Disponibilidad {
-  id         String   @id @default(uuid())
-  fecha      String   // Ejemplo: "2026-03-01"
-  hora       String   // Ejemplo: "09:00"
-  estaLibre  Boolean  @default(true) // Si tu tío lo cambia a 'false', se bloquea
+  id        String  @id @default(uuid())
+  fecha     String  // Ejemplo: "2026-03-01"
+  hora      String  // Ejemplo: "09:00"
+  estaLibre Boolean @default(true)
 }
+
+// ==========================================
+// 2. TABLA CENTRAL DE USUARIOS
+// ==========================================
 
 enum RolUsuario {
   ADMIN
@@ -44,4 +49,111 @@ model Usuario {
   password  String     
   rol       RolUsuario 
   createdAt DateTime   @default(now())
+
+  // Relaciones (Conectan a este usuario con el resto del sistema)
+  propiedades   Propiedad[]   @relation("PropietarioPropiedad")
+  tareas_aseo   TareasAseo[]  @relation("EmpleadoAseo")
+  liquidaciones Liquidacion[] @relation("PropietarioLiquidacion")
+}
+
+// ==========================================
+// 3. ECOSISTEMA DE PROPIEDADES Y OPERACIÓN
+// ==========================================
+
+model Propiedad {
+  id                  String       @id @default(uuid())
+  nombre              String
+  ubicacion           String
+  
+  // Relación: ¿Quién es el dueño?
+  propietario_id      String?
+  propietario         Usuario?     @relation("PropietarioPropiedad", fields: [propietario_id], references: [id])
+  
+  wifi_red            String?
+  wifi_pass           String?
+  cerradura_codigo    String?
+  capacidad_huespedes Int          @default(2)
+  habitaciones        Int          @default(1)
+  banos               Int          @default(1)
+  foto_url            String?
+  created_at          DateTime     @default(now())
+
+  // Relaciones hacia abajo
+  inventario          Inventario?
+  reservas            Reserva[]
+  tareas              TareasAseo[]
+}
+
+model Inventario {
+  propiedad_id     String    @id
+  propiedad        Propiedad @relation(fields: [propiedad_id], references: [id], onDelete: Cascade)
+  
+  // Dotación Fija
+  tenedores        Int       @default(0)
+  cuchillos        Int       @default(0)
+  platos           Int       @default(0)
+  vasos            Int       @default(0)
+  toallas_grandes  Int       @default(0)
+  toallas_pequenas Int       @default(0)
+  
+  // Consumibles
+  papel_higienico  Int       @default(0)
+  kits_bano        Int       @default(0)
+  cafe             Int       @default(0)
+  te               Int       @default(0)
+  azucar           Int       @default(0)
+  jabon_barra      Int       @default(0)
+  shampoo          Int       @default(0)
+  
+  last_updated     DateTime  @default(now())
+}
+
+model Reserva {
+  id              String    @id @default(uuid())
+  propiedad_id    String
+  propiedad       Propiedad @relation(fields: [propiedad_id], references: [id], onDelete: Cascade)
+  
+  huesped_nombre  String
+  check_in        DateTime
+  check_out       DateTime
+  canal           String    // Ej: 'Airbnb', 'Booking.com', 'Directa'
+  monto_total     Float
+  estado_reserva  String    @default("Confirmada")
+  created_at      DateTime  @default(now())
+}
+
+model TareasAseo {
+  id                String    @id @default(uuid())
+  propiedad_id      String
+  propiedad         Propiedad @relation(fields: [propiedad_id], references: [id], onDelete: Cascade)
+  
+  // Relación: ¿Qué empleado la limpió?
+  empleado_id       String?
+  empleado          Usuario?  @relation("EmpleadoAseo", fields: [empleado_id], references: [id])
+  
+  urgencia          String    // 'Urgente', 'Normal', 'Flexible'
+  estado            String    @default("Pendiente") // 'En Progreso', 'En Inspeccion', 'Aprobado'
+  tiempo_segundos   Int       @default(0)
+  novedad_reportada String?
+  
+  created_at        DateTime  @default(now())
+  completed_at      DateTime?
+}
+
+model Liquidacion {
+  id               String   @id @default(uuid())
+  
+  // Relación: ¿A qué propietario se le paga?
+  propietario_id   String
+  propietario      Usuario  @relation("PropietarioLiquidacion", fields: [propietario_id], references: [id], onDelete: Cascade)
+  
+  mes              String
+  anio             Int
+  ingreso_bruto    Float    @default(0)
+  gastos           Float    @default(0)
+  comision_gv      Float    @default(0)
+  total_depositado Float    @default(0)
+  estado           String   @default("Pendiente") // 'Pendiente', 'Pagado'
+  pdf_url          String?
+  created_at       DateTime @default(now())
 }
