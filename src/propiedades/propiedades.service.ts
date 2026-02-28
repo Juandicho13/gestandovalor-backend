@@ -14,22 +14,16 @@ export class PropiedadesService {
     });
   }
 
-  async findAll() {
+  findAll() {
     return this.prisma.propiedad.findMany({
-      include: {
-        propietario: {
-          select: { nombre: true, username: true } // Trae datos básicos del dueño
-        }
-      }
+      include: { inventario: true } // <-- Le decimos que incluya el inventario
     });
   }
 
-  async findOne(id: string) {
+  findOne(id: string) {
     return this.prisma.propiedad.findUnique({
       where: { id },
-      include: {
-        inventario: true // Trae también el inventario de esta propiedad
-      }
+      include: { inventario: true } // <-- Aquí también
     });
   }
 
