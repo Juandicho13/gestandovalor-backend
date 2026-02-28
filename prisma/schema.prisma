@@ -174,3 +174,13 @@ model Liquidacion {
   pdf_url          String?
   created_at       DateTime @default(now())
 }
+model ArticuloBlog {
+  id              String   @id @default(uuid())
+  titulo          String
+  categoria       String
+  foto_url        String?
+  contenido       String
+  tiempo_lectura  Int      @default(5)
+  estado          String   @default("Publicado")
+  created_at      DateTime @default(now())
+}

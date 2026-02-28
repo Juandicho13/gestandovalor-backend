@@ -10,9 +10,10 @@ import { ReservasModule } from './reservas/reservas.module';
 import { InventariosModule } from './inventarios/inventarios.module';
 import { TareasAseoModule } from './tareas-aseo/tareas-aseo.module';
 import { LiquidacionesModule } from './liquidaciones/liquidaciones.module';
+import { BlogModule } from './blog/blog.module';
 
 @Module({
-  imports: [ProspectosModule, PropiedadesModule, ReservasModule, InventariosModule, TareasAseoModule, LiquidacionesModule],
+  imports: [ProspectosModule, PropiedadesModule, ReservasModule, InventariosModule, TareasAseoModule, LiquidacionesModule, BlogModule],
   controllers: [AppController, UsuariosController, AuthController],
   providers: [AppService, PrismaService],
 })
