@@ -24,13 +24,6 @@ model Prospecto {
   fechaCreacion   DateTime @default(now())
 }
 
-model Disponibilidad {
-  id        String  @id @default(uuid())
-  fecha     String  // Ejemplo: "2026-03-01"
-  hora      String  // Ejemplo: "09:00"
-  estaLibre Boolean @default(true)
-}
-
 // ==========================================
 // 2. TABLA CENTRAL DE USUARIOS
 // ==========================================
@@ -183,4 +176,13 @@ model ArticuloBlog {
   tiempo_lectura  Int      @default(5)
   estado          String   @default("Publicado")
   created_at      DateTime @default(now())
+}
+model Disponibilidad {
+  id          String   @id @default(uuid())
+  diaSemana   Int      
+  hora        String   
+  activo      Boolean  @default(true)
+  created_at  DateTime @default(now())
+
+  @@unique([diaSemana, hora]) 
 }

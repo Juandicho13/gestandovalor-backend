@@ -11,9 +11,10 @@ import { InventariosModule } from './inventarios/inventarios.module';
 import { TareasAseoModule } from './tareas-aseo/tareas-aseo.module';
 import { LiquidacionesModule } from './liquidaciones/liquidaciones.module';
 import { BlogModule } from './blog/blog.module';
+import { DisponibilidadModule } from './disponibilidad/disponibilidad.module';
 
 @Module({
-  imports: [ProspectosModule, PropiedadesModule, ReservasModule, InventariosModule, TareasAseoModule, LiquidacionesModule, BlogModule],
+  imports: [ProspectosModule, PropiedadesModule, ReservasModule, InventariosModule, TareasAseoModule, LiquidacionesModule, BlogModule, DisponibilidadModule],
   controllers: [AppController, UsuariosController, AuthController],
   providers: [AppService, PrismaService],
 })
