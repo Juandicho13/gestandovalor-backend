@@ -11,7 +11,15 @@ export class LiquidacionesService {
 
   findAll() {
     return this.prisma.liquidacion.findMany({
-      include: { propietario: { select: { nombre: true } } }
+      include: { 
+        propiedad: { 
+          include: { 
+            propietario: { 
+              select: { nombre: true } 
+            } 
+          } 
+        } 
+      }
     });
   }
 
