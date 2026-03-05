@@ -13,9 +13,26 @@ import { LiquidacionesModule } from './liquidaciones/liquidaciones.module';
 import { BlogModule } from './blog/blog.module';
 import { DisponibilidadModule } from './disponibilidad/disponibilidad.module';
 
+// 👇 1. Importamos el nuevo controlador que creamos
+import { LiquidacionesController } from './liquidaciones/liquidaciones.controller'; 
+
 @Module({
-  imports: [ProspectosModule, PropiedadesModule, ReservasModule, InventariosModule, TareasAseoModule, LiquidacionesModule, BlogModule, DisponibilidadModule],
-  controllers: [AppController, UsuariosController, AuthController],
+  imports: [
+    ProspectosModule, 
+    PropiedadesModule, 
+    ReservasModule, 
+    InventariosModule, 
+    TareasAseoModule, 
+    LiquidacionesModule, 
+    BlogModule, 
+    DisponibilidadModule
+  ],
+  controllers: [
+    AppController, 
+    UsuariosController, 
+    AuthController, 
+    LiquidacionesController // 👇 2. Lo conectamos al cerebro principal
+  ],
   providers: [AppService, PrismaService],
 })
 export class AppModule {}

@@ -44,9 +44,8 @@ model Usuario {
   createdAt DateTime   @default(now())
 
   // Relaciones (Conectan a este usuario con el resto del sistema)
-  propiedades   Propiedad[]   @relation("PropietarioPropiedad")
-  tareas_aseo   TareasAseo[]  @relation("EmpleadoAseo")
-  liquidaciones Liquidacion[] @relation("PropietarioLiquidacion")
+  propiedades  Propiedad[]  @relation("PropietarioPropiedad")
+  tareas_aseo  TareasAseo[] @relation("EmpleadoAseo")
 }
 
 // ==========================================
@@ -86,10 +85,13 @@ model Propiedad {
   
   // Relaciones
   propietario_id      String?
-  propietario         Usuario? @relation("PropietarioPropiedad", fields: [propietario_id], references: [id])
+  propietario         Usuario?      @relation("PropietarioPropiedad", fields: [propietario_id], references: [id])
   inventario          Inventario?
   reservas            Reserva[]
   tareas_aseo         TareasAseo[]
+  
+  // LA NUEVA RELACIÓN DE LIQUIDACIONES
+  liquidaciones       Liquidacion[]
 
   created_at          DateTime @default(now())
 }
@@ -150,23 +152,24 @@ model TareasAseo {
   completed_at      DateTime?
 }
 
+// ==========================================
+// 4. MÓDULO FINANCIERO (NUEVO)
+// ==========================================
+
 model Liquidacion {
-  id               String   @id @default(uuid())
-  
-  // Relación: ¿A qué propietario se le paga?
-  propietario_id   String
-  propietario      Usuario  @relation("PropietarioLiquidacion", fields: [propietario_id], references: [id], onDelete: Cascade)
-  
-  mes              String
-  anio             Int
-  ingreso_bruto    Float    @default(0)
-  gastos           Float    @default(0)
-  comision_gv      Float    @default(0)
-  total_depositado Float    @default(0)
-  estado           String   @default("Pendiente") // 'Pendiente', 'Pagado'
-  pdf_url          String?
-  created_at       DateTime @default(now())
+  id             String    @id @default(uuid())
+  propiedad_id   String
+  mes_anio       String
+  archivo_pdf    String    // Aquí se guarda el PDF gigante en Base64
+  nombre_archivo String
+  created_at     DateTime  @default(now())
+
+  propiedad      Propiedad @relation(fields: [propiedad_id], references: [id], onDelete: Cascade)
 }
+
+// ==========================================
+// 5. OTROS MÓDULOS
+// ==========================================
 
 model Disponibilidad {
   id          String   @id @default(uuid())
@@ -177,6 +180,7 @@ model Disponibilidad {
 
   @@unique([diaSemana, hora]) 
 }
+
 model ArticuloBlog {
   id             Int      @id @default(autoincrement())
   titulo         String
