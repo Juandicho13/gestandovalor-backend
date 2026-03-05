@@ -38,6 +38,8 @@ export class PropiedadesService {
         },
       });
     } catch (error) {
+      // 👇 AQUÍ PUSIMOS LA LUPA PARA CAZAR EL ERROR EN RENDER 👇
+      console.log("💥 ERROR PRISMA AL ACTUALIZAR:", error);
       throw new HttpException('Error al actualizar la propiedad', HttpStatus.BAD_REQUEST);
     }
   }
