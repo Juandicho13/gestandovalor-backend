@@ -36,6 +36,33 @@ export class UsuariosController {
     }
   }
 
+  // ... tu código de crear y obtener ...
+
+  // NUEVA PUERTA DE ENTRADA: LOGIN
+  @Post('login')
+  async login(@Body() body: any) {
+    const usuario = await prisma.usuario.findFirst({
+      where: { 
+        username: body.username,
+        password: body.password 
+      }
+    });
+
+    if (!usuario) {
+      throw new HttpException('Credenciales incorrectas', HttpStatus.UNAUTHORIZED);
+    }
+
+    // Si todo está bien, devolvemos el usuario pero SIN la contraseña por seguridad
+    const { password, ...usuarioSinPass } = usuario;
+    
+    return {
+      mensaje: 'Login exitoso',
+      usuario: usuarioSinPass
+    };
+  }
+
+  // ... tus funciones de patch y delete ...
+
   // 3. ACTUALIZAR USUARIO (Para que funcione el botón "Editar")
   @Patch(':id')
   async actualizarUsuario(@Param('id') id: string, @Body() body: any) {
@@ -74,4 +101,5 @@ export class UsuariosController {
       throw new HttpException('Error al eliminar el usuario', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+  
 }
