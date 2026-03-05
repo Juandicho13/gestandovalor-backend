@@ -1,22 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { TareasAseoService } from './tareas-aseo.service';
+import { Controller, Get } from '@nestjs/common';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 @Controller('tareas-aseo')
 export class TareasAseoController {
-  constructor(private readonly tareasAseoService: TareasAseoService) {}
-
-  @Post()
-  create(@Body() data: any) { return this.tareasAseoService.create(data); }
-
+  
   @Get()
-  findAll() { return this.tareasAseoService.findAll(); }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) { return this.tareasAseoService.findOne(id); }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() data: any) { return this.tareasAseoService.update(id, data); }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) { return this.tareasAseoService.remove(id); }
+  async obtenerTareas() {
+    // Busca todas las tareas y trae también los datos de la propiedad a la que pertenecen
+    return await prisma.tareasAseo.findMany({
+      include: {
+        propiedad: true, 
+      },
+      orderBy: { created_at: 'desc' }
+    });
+  }
 }
