@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service'; 
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class BlogService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   create(data: any) {
     return this.prisma.articuloBlog.create({
@@ -11,22 +11,35 @@ export class BlogService {
         titulo: data.titulo,
         categoria: data.categoria,
         tiempo_lectura: data.tiempo_lectura,
-        foto_url: data.foto_url, 
+        foto_url: data.foto_url,
         contenido: data.contenido,
         estado: data.estado,
-      }
+      },
     });
   }
 
   findAll() {
     return this.prisma.articuloBlog.findMany({
-      orderBy: { created_at: 'desc' } 
+      orderBy: { createdAt: 'desc' } 
     });
   }
 
   findOne(id: string) {
     return this.prisma.articuloBlog.findUnique({
-      where: { id }
+      where: { id: Number(id) } 
+    });
+  }
+
+  update(id: string, updateData: any) {
+    return this.prisma.articuloBlog.update({
+      where: { id: Number(id) }, 
+      data: updateData,
+    });
+  }
+
+  remove(id: string) {
+    return this.prisma.articuloBlog.delete({
+      where: { id: Number(id) } 
     });
   }
 }

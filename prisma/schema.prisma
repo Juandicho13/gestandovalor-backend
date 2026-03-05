@@ -167,16 +167,7 @@ model Liquidacion {
   pdf_url          String?
   created_at       DateTime @default(now())
 }
-model ArticuloBlog {
-  id              String   @id @default(uuid())
-  titulo          String
-  categoria       String
-  foto_url        String?
-  contenido       String
-  tiempo_lectura  Int      @default(5)
-  estado          String   @default("Publicado")
-  created_at      DateTime @default(now())
-}
+
 model Disponibilidad {
   id          String   @id @default(uuid())
   diaSemana   Int      
@@ -185,4 +176,16 @@ model Disponibilidad {
   created_at  DateTime @default(now())
 
   @@unique([diaSemana, hora]) 
+}
+model ArticuloBlog {
+  id             Int      @id @default(autoincrement())
+  titulo         String
+  categoria      String
+  tiempo_lectura Int
+  foto_url       String?  // Es opcional (String?) por si un artículo no tiene portada
+  contenido      String   // Aquí guardaremos todo el HTML y las fotos intercaladas en Base64
+  estado         String   @default("Publicado")
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
