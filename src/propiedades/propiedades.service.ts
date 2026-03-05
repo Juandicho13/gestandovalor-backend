@@ -1,41 +1,49 @@
-import { Injectable } from '@nestjs/common';
-import { CreatePropiedadeDto } from './dto/create-propiedade.dto';
-import { UpdatePropiedadeDto } from './dto/update-propiedade.dto';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class PropiedadesService {
-  // Inyectamos Prisma para poder hablar con la base de datos
   constructor(private prisma: PrismaService) {}
 
-  async create(createPropiedadeDto: any) {
-    return this.prisma.propiedad.create({
-      data: createPropiedadeDto,
+  async create(data: any) {
+    try {
+      return await this.prisma.propiedad.create({
+        data: {
+          ...data,
+        },
+      });
+    } catch (error) {
+      throw new HttpException('Error al crear la propiedad', HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async findAll() {
+    return await this.prisma.propiedad.findMany({
+      orderBy: { created_at: 'desc' }
     });
   }
 
-  findAll() {
-    return this.prisma.propiedad.findMany({
-      include: { inventario: true } // <-- Le decimos que incluya el inventario
-    });
-  }
-
-  findOne(id: string) {
-    return this.prisma.propiedad.findUnique({
+  async findOne(id: string) {
+    return await this.prisma.propiedad.findUnique({
       where: { id },
-      include: { inventario: true } // <-- Aquí también
     });
   }
 
-  async update(id: string, updatePropiedadeDto: any) {
-    return this.prisma.propiedad.update({
-      where: { id },
-      data: updatePropiedadeDto,
-    });
+  async update(id: string, data: any) {
+    try {
+      return await this.prisma.propiedad.update({
+        where: { id },
+        data: {
+          ...data,
+        },
+      });
+    } catch (error) {
+      throw new HttpException('Error al actualizar la propiedad', HttpStatus.BAD_REQUEST);
+    }
   }
 
   async remove(id: string) {
-    return this.prisma.propiedad.delete({
+    return await this.prisma.propiedad.delete({
       where: { id },
     });
   }

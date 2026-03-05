@@ -6,8 +6,8 @@ export class PropiedadesController {
   constructor(private readonly propiedadesService: PropiedadesService) {}
 
   @Post()
-  create(@Body() createPropiedadeDto: any) {
-    return this.propiedadesService.create(createPropiedadeDto);
+  create(@Body() body: any) {
+    return this.propiedadesService.create(body);
   }
 
   @Get()
@@ -21,8 +21,8 @@ export class PropiedadesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePropiedadeDto: any) {
-    return this.propiedadesService.update(id, updatePropiedadeDto);
+  update(@Param('id') id: string, @Body() body: any) {
+    return this.propiedadesService.update(id, body);
   }
 
   @Delete(':id')
