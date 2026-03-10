@@ -82,6 +82,8 @@ model Propiedad {
   wifi_red            String?
   wifi_pass           String?
   cerradura_codigo    String?
+  link_airbnb         String?
+  link_booking        String?
   
   // Relaciones
   propietario_id      String?

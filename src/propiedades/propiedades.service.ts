@@ -49,4 +49,17 @@ export class PropiedadesService {
       where: { id },
     });
   }
-}
+
+  // ✨ NUEVA FUNCIÓN: Actualizar datos de una propiedad (links, precios, etc)
+  async update(id: string, data: any) {
+    try {
+      return await this.prisma.propiedad.update({
+        where: { id },
+        data
+      });
+    } catch (error) {
+      console.error("💥 Error al actualizar la propiedad:", error);
+      throw new HttpException('Error al actualizar la propiedad', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+} 
