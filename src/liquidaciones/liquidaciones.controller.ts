@@ -1,22 +1,31 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
 import { LiquidacionesService } from './liquidaciones.service';
 
 @Controller('liquidaciones')
 export class LiquidacionesController {
   constructor(private readonly liquidacionesService: LiquidacionesService) {}
 
+  // 1. Recibir y guardar el PDF
   @Post()
-  create(@Body() data: any) { return this.liquidacionesService.create(data); }
+  create(@Body() body: any) {
+    return this.liquidacionesService.subirLiquidacion(body);
+  }
 
+  // 2. ESTA ES LA RUTA MÁGICA QUE LE FALTABA AL FRONTEND
+  @Get('propiedad/:id')
+  obtenerPorPropiedad(@Param('id') id: string) {
+    return this.liquidacionesService.obtenerPorPropiedad(id);
+  }
+
+  // 3. Ver todas (por si luego haces un panel de admin general)
   @Get()
-  findAll() { return this.liquidacionesService.findAll(); }
+  findAll() {
+    return this.liquidacionesService.findAll();
+  }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) { return this.liquidacionesService.findOne(id); }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() data: any) { return this.liquidacionesService.update(id, data); }
-
+  // 👇 4. ESTO ES LO ÚNICO NUEVO: LA RUTA PARA BORRAR EL PDF 👇
   @Delete(':id')
-  remove(@Param('id') id: string) { return this.liquidacionesService.remove(id); }
+  remove(@Param('id') id: string) {
+    return this.liquidacionesService.remove(id);
+  }
 }
