@@ -43,7 +43,7 @@ model Usuario {
   rol       RolUsuario 
   createdAt DateTime   @default(now())
 
-  // Relaciones (Conectan a este usuario con el resto del sistema)
+  // Relaciones
   propiedades  Propiedad[]  @relation("PropietarioPropiedad")
   tareas_aseo  TareasAseo[] @relation("EmpleadoAseo")
 }
@@ -56,8 +56,8 @@ model Propiedad {
   id                  String   @id @default(uuid())
   
   // 1. Describe tu espacio
-  tipo_propiedad      String?  // Ej: Apartamento, Casa, Loft
-  tipo_alojamiento    String?  // Ej: Un alojamiento entero
+  tipo_propiedad      String?  
+  tipo_alojamiento    String?  
   pais                String?
   direccion           String?
   ciudad              String?
@@ -68,22 +68,30 @@ model Propiedad {
   banos               Int?
 
   // 2. Haz que destaque
-  comodidades         String[] // Lista de strings: ["Wifi", "Cocina", "TV"]
-  fotos               String[] // Lista de URLs de fotos
+  comodidades         String[] 
+  fotos               String[] 
+  // ✨ NUEVO: Arreglo paralelo para guardar a qué habitación pertenece cada foto
+  foto_categorias     String[] @default([]) 
   titulo              String?
   descripcion         String?
 
   // 3. Terminar y publicar
   precio_noche        Float?
-  descuentos          Json?    // Para guardar promociones estructuradas
-  seguridad           String[] // ["Cámara de seguridad exterior"]
+  descuentos          Json?    
+  seguridad           String[] 
 
   // Operación interna (Lo que ven los empleados)
   wifi_red            String?
   wifi_pass           String?
   cerradura_codigo    String?
+
+  // Enlaces de OTA's
   link_airbnb         String?
   link_booking        String?
+
+  // ✨ NUEVO: Coordenadas precisas para el mapa interactivo
+  lat                 Float?
+  lng                 Float?
   
   // Relaciones
   propietario_id      String?
@@ -92,7 +100,6 @@ model Propiedad {
   reservas            Reserva[]
   tareas_aseo         TareasAseo[]
   
-  // LA NUEVA RELACIÓN DE LIQUIDACIONES
   liquidaciones       Liquidacion[]
 
   created_at          DateTime @default(now())
@@ -130,7 +137,7 @@ model Reserva {
   huesped_nombre  String
   check_in        DateTime
   check_out       DateTime
-  canal           String    // Ej: 'Airbnb', 'Booking.com', 'Directa'
+  canal           String    
   monto_total     Float
   estado_reserva  String    @default("Confirmada")
   created_at      DateTime  @default(now())
@@ -141,12 +148,11 @@ model TareasAseo {
   propiedad_id      String
   propiedad         Propiedad @relation(fields: [propiedad_id], references: [id], onDelete: Cascade)
   
-  // Relación: ¿Qué empleado la limpió?
   empleado_id       String?
   empleado          Usuario?  @relation("EmpleadoAseo", fields: [empleado_id], references: [id])
   
-  urgencia          String    // 'Urgente', 'Normal', 'Flexible'
-  estado            String    @default("Pendiente") // 'En Progreso', 'En Inspeccion', 'Aprobado'
+  urgencia          String    
+  estado            String    @default("Pendiente") 
   tiempo_segundos   Int       @default(0)
   novedad_reportada String?
   
@@ -155,14 +161,14 @@ model TareasAseo {
 }
 
 // ==========================================
-// 4. MÓDULO FINANCIERO (NUEVO)
+// 4. MÓDULO FINANCIERO
 // ==========================================
 
 model Liquidacion {
   id             String    @id @default(uuid())
   propiedad_id   String
   mes_anio       String
-  archivo_pdf    String    // Aquí se guarda el PDF gigante en Base64
+  archivo_pdf    String    
   nombre_archivo String
   created_at     DateTime  @default(now())
 
@@ -188,8 +194,8 @@ model ArticuloBlog {
   titulo         String
   categoria      String
   tiempo_lectura Int
-  foto_url       String?  // Es opcional (String?) por si un artículo no tiene portada
-  contenido      String   // Aquí guardaremos todo el HTML y las fotos intercaladas en Base64
+  foto_url       String?  
+  contenido      String   
   estado         String   @default("Publicado")
   
   createdAt      DateTime @default(now())
