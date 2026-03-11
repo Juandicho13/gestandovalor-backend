@@ -1,18 +1,38 @@
-import { IsOptional, IsArray, IsString, IsNumber } from 'class-validator';
+import { IsOptional, IsString, IsNumber, IsArray } from 'class-validator';
 
-export class CreatePropiedadDto {
-  // ... todos tus campos anteriores ...
+export class CreatePropiedadeDto {
+  @IsOptional() @IsString() tipo_propiedad?: string;
+  @IsOptional() @IsString() tipo_alojamiento?: string;
+  @IsOptional() @IsString() pais?: string;
+  @IsOptional() @IsString() direccion?: string;
+  @IsOptional() @IsString() ciudad?: string;
+  @IsOptional() @IsString() departamento?: string;
 
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  foto_categorias?: string[];
+  @IsOptional() @IsNumber() capacidad_huespedes?: number;
+  @IsOptional() @IsNumber() habitaciones?: number;
+  @IsOptional() @IsNumber() camas?: number;
+  @IsOptional() @IsNumber() banos?: number;
 
-  @IsOptional()
-  @IsNumber()
-  lat?: number;
+  @IsOptional() @IsArray() @IsString({ each: true }) comodidades?: string[];
+  @IsOptional() @IsArray() @IsString({ each: true }) fotos?: string[];
+  @IsOptional() @IsArray() @IsString({ each: true }) foto_categorias?: string[];
+  
+  @IsOptional() @IsString() titulo?: string;
+  @IsOptional() @IsString() descripcion?: string;
 
-  @IsOptional()
-  @IsNumber()
-  lng?: number;
+  @IsOptional() @IsNumber() precio_noche?: number;
+  @IsOptional() descuentos?: any;
+  @IsOptional() @IsArray() @IsString({ each: true }) seguridad?: string[];
+
+  @IsOptional() @IsString() wifi_red?: string;
+  @IsOptional() @IsString() wifi_pass?: string;
+  @IsOptional() @IsString() cerradura_codigo?: string;
+
+  @IsOptional() @IsString() link_airbnb?: string;
+  @IsOptional() @IsString() link_booking?: string;
+
+  @IsOptional() @IsNumber() lat?: number;
+  @IsOptional() @IsNumber() lng?: number;
+
+  @IsOptional() @IsString() propietario_id?: string;
 }
