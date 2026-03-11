@@ -1,17 +1,24 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import * as express from 'express';
+import { ValidationPipe } from '@nestjs/common';
+// ✨ IMPORTA ESTO ARRIBA ✨
+import { json, urlencoded } from 'express'; 
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // 1. Asegurar que las webs externas puedan conectarse (CORS)
   app.enableCors();
 
-  // 2. LA MAGIA: Aumentar el límite de peso a 50 Megabytes para que pasen las fotos
-  app.use(express.json({ limit: '50mb' }));
-  app.use(express.urlencoded({ limit: '50mb', extended: true }));
+  // ✨ AQUÍ ESTÁ LA MAGIA: AMPLIAMOS EL LÍMITE A 50MB ✨
+  app.use(json({ limit: '50mb' }));
+  app.use(urlencoded({ extended: true, limit: '50mb' }));
 
-  await app.listen(process.env.PORT || 3000);
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+  }));
+
+  await app.listen(3000); // (O el puerto que tengas configurado)
 }
 bootstrap();
