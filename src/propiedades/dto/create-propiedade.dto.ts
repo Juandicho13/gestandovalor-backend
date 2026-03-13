@@ -16,7 +16,7 @@ export class CreatePropiedadeDto {
   @IsOptional() @IsArray() @IsString({ each: true }) comodidades?: string[];
   @IsOptional() @IsArray() @IsString({ each: true }) fotos?: string[];
   @IsOptional() @IsArray() @IsString({ each: true }) foto_categorias?: string[];
-  
+
   @IsOptional() @IsString() titulo?: string;
   @IsOptional() @IsString() descripcion?: string;
 
@@ -35,4 +35,8 @@ export class CreatePropiedadeDto {
   @IsOptional() @IsNumber() lng?: number;
 
   @IsOptional() @IsString() propietario_id?: string;
+
+  @IsOptional() @IsNumber() latitud?: number;
+
+  @IsOptional() @IsNumber() longitud?: number;
 }

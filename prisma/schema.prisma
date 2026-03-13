@@ -66,6 +66,8 @@ model Propiedad {
   habitaciones        Int?
   camas               Int?
   banos               Int?
+  latitud  Float?
+longitud Float?
 
   // 2. Haz que destaque
   comodidades         String[] 
