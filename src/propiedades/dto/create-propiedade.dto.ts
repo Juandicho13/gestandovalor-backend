@@ -35,8 +35,4 @@ export class CreatePropiedadeDto {
   @IsOptional() @IsNumber() lng?: number;
 
   @IsOptional() @IsString() propietario_id?: string;
-
-  @IsOptional() @IsNumber() latitud?: number;
-
-  @IsOptional() @IsNumber() longitud?: number;
 }

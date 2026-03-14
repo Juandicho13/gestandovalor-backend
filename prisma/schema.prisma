@@ -66,8 +66,6 @@ model Propiedad {
   habitaciones        Int?
   camas               Int?
   banos               Int?
-  latitud  Float?
-longitud Float?
 
   // 2. Haz que destaque
   comodidades         String[] 
@@ -182,11 +180,11 @@ model Liquidacion {
 // ==========================================
 
 model Disponibilidad {
-  id          String   @id @default(uuid())
-  diaSemana   Int      
-  hora        String   
-  activo      Boolean  @default(true)
-  created_at  DateTime @default(now())
+  id         String   @id @default(uuid())
+  diaSemana  Int      
+  hora       String   
+  activo     Boolean  @default(true)
+  created_at DateTime @default(now())
 
   @@unique([diaSemana, hora]) 
 }
