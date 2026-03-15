@@ -70,7 +70,6 @@ model Propiedad {
   // 2. Haz que destaque
   comodidades         String[] 
   fotos               String[] 
-  // ✨ NUEVO: Arreglo paralelo para guardar a qué habitación pertenece cada foto
   foto_categorias     String[] @default([]) 
   titulo              String?
   descripcion         String?
@@ -89,7 +88,7 @@ model Propiedad {
   link_airbnb         String?
   link_booking        String?
 
-  // ✨ NUEVO: Coordenadas precisas para el mapa interactivo
+  // Coordenadas precisas para el mapa interactivo
   lat                 Float?
   lng                 Float?
   
@@ -99,8 +98,10 @@ model Propiedad {
   inventario          Inventario?
   reservas            Reserva[]
   tareas_aseo         TareasAseo[]
-  
   liquidaciones       Liquidacion[]
+
+  // ✨ NUEVO: Relación con las tarifas dinámicas
+  tarifas_especiales  TarifaEspecial[] 
 
   created_at          DateTime @default(now())
 }
@@ -130,17 +131,34 @@ model Inventario {
 }
 
 model Reserva {
-  id              String    @id @default(uuid())
-  propiedad_id    String
-  propiedad       Propiedad @relation(fields: [propiedad_id], references: [id], onDelete: Cascade)
+  id                  String    @id @default(uuid())
+  propiedad_id        String
+  propiedad           Propiedad @relation(fields: [propiedad_id], references: [id], onDelete: Cascade)
   
-  huesped_nombre  String
-  check_in        DateTime
-  check_out       DateTime
-  canal           String    
-  monto_total     Float
-  estado_reserva  String    @default("Confirmada")
-  created_at      DateTime  @default(now())
+  huesped_nombre      String
+  check_in            DateTime
+  check_out           DateTime
+  canal               String    
+  monto_total         Float
+  
+  // ✨ NUEVO: Guardar cuántas personas vienen
+  cantidad_huespedes  Int       @default(1)
+
+  estado_reserva      String    @default("Confirmada")
+  created_at          DateTime  @default(now())
+}
+
+// ✨ NUEVO MODELO: Para guardar los precios de fines de semana o temporadas ✨
+model TarifaEspecial {
+  id            String    @id @default(uuid())
+  propiedad_id  String
+  propiedad     Propiedad @relation(fields: [propiedad_id], references: [id], onDelete: Cascade)
+  
+  fecha_inicio  DateTime
+  fecha_fin     DateTime
+  precio        Float
+  
+  created_at    DateTime  @default(now())
 }
 
 model TareasAseo {
@@ -199,5 +217,5 @@ model ArticuloBlog {
   estado         String   @default("Publicado")
   
   createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  updatedAt      DateTime @updatedAt 
 }
