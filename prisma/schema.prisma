@@ -140,15 +140,11 @@ model Reserva {
   check_out           DateTime
   canal               String    
   monto_total         Float
-  
-  // ✨ NUEVO: Guardar cuántas personas vienen
   cantidad_huespedes  Int       @default(1)
-
   estado_reserva      String    @default("Confirmada")
   created_at          DateTime  @default(now())
 }
 
-// ✨ NUEVO MODELO: Para guardar los precios de fines de semana o temporadas ✨
 model TarifaEspecial {
   id            String    @id @default(uuid())
   propiedad_id  String
