@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ==========================================
@@ -74,10 +75,13 @@ model Propiedad {
   titulo              String?
   descripcion         String?
 
-  // 3. Terminar y publicar
-  precio_noche        Float?
-  descuentos          Json?    
-  seguridad           String[] 
+  // 3. Terminar y publicar (TARIFAS BASE)
+  precio_noche         Float?
+  huespedes_base       Int?      @default(1)
+  precio_huesped_extra Float?    @default(0)
+  precio_mascota       Float?    @default(0)
+  descuentos           Json?    
+  seguridad            String[] 
 
   // Operación interna (Lo que ven los empleados)
   wifi_red            String?
