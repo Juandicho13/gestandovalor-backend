@@ -80,6 +80,7 @@ model Propiedad {
   huespedes_base       Int?      @default(1)
   precio_huesped_extra Float?    @default(0)
   precio_mascota       Float?    @default(0)
+  tarifa_aseo          Float?    @default(0) // ✨ AQUI ESTÁ EL ASEO
   descuentos           Json?    
   seguridad            String[] 
 

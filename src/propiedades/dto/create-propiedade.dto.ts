@@ -21,6 +21,13 @@ export class CreatePropiedadeDto {
   @IsOptional() @IsString() descripcion?: string;
 
   @IsOptional() @IsNumber() precio_noche?: number;
+
+  // ✨ NUEVAS VARIABLES DE TARIFAS ✨
+  @IsOptional() @IsNumber() huespedes_base?: number;
+  @IsOptional() @IsNumber() precio_huesped_extra?: number;
+  @IsOptional() @IsNumber() precio_mascota?: number;
+  @IsOptional() @IsNumber() tarifa_aseo?: number;
+
   @IsOptional() descuentos?: any;
   @IsOptional() @IsArray() @IsString({ each: true }) seguridad?: string[];
 
