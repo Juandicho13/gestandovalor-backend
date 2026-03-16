@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReservaDto } from './dto/create-reserva.dto';
 
@@ -35,12 +35,9 @@ export class ReservasService {
         },
       });
     } catch (error) {
-      // 🔥 EL CHIVATO: Esto atrapará el error real y lo enviará al frontend 🔥
+      // 🔥 ESTO DESENMASCARA EL ERROR 🔥
       console.error("🔥 ERROR REAL EN BD:", error);
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
-      throw new InternalServerErrorException(`Fallo en BD: ${error.message}`);
+      throw new BadRequestException(`Detalle exacto: ${error.message || error}`);
     }
   }
 
