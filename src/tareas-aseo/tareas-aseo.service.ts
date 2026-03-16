@@ -3,30 +3,26 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class TareasAseoService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
-  create(data: any) {
+  async create(data: any) {
     return this.prisma.tareasAseo.create({ data });
   }
 
-  findAll() {
+  async findByEmpleado(empleado_id: string) {
     return this.prisma.tareasAseo.findMany({
+      where: { empleado_id },
       include: {
-          propiedad: { select: { titulo: true } }, // <-- Cambiamos nombre por titulo
-          empleado: { select: { nombre: true } } // (El empleado sí sigue teniendo nombre, ese déjalo igual)
-      }
+        propiedad: true // <-- Trae el título, dirección y clave de la cerradura
+      },
+      orderBy: { created_at: 'desc' }
     });
   }
 
-  findOne(id: string) {
-    return this.prisma.tareasAseo.findUnique({ where: { id } });
-  }
-
-  update(id: string, data: any) {
-    return this.prisma.tareasAseo.update({ where: { id }, data });
-  }
-
-  remove(id: string) {
-    return this.prisma.tareasAseo.delete({ where: { id } });
+  async update(id: string, data: any) {
+    return this.prisma.tareasAseo.update({
+      where: { id },
+      data,
+    });
   }
 }

@@ -1,19 +1,22 @@
-import { Controller, Get } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { Controller, Get, Param, Patch, Body, Post } from '@nestjs/common';
+import { TareasAseoService } from './tareas-aseo.service';
 
 @Controller('tareas-aseo')
 export class TareasAseoController {
-  
-  @Get()
-  async obtenerTareas() {
-    // Busca todas las tareas y trae también los datos de la propiedad a la que pertenecen
-    return await prisma.tareasAseo.findMany({
-      include: {
-        propiedad: true, 
-      },
-      orderBy: { created_at: 'desc' }
-    });
+  constructor(private readonly tareasAseoService: TareasAseoService) { }
+
+  @Post()
+  create(@Body() createTareaDto: any) {
+    return this.tareasAseoService.create(createTareaDto);
+  }
+
+  @Get('empleado/:id')
+  findByEmpleado(@Param('id') id: string) {
+    return this.tareasAseoService.findByEmpleado(id);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateTareaDto: any) {
+    return this.tareasAseoService.update(id, updateTareaDto);
   }
 }
