@@ -53,4 +53,10 @@ export class ReservasService {
       where: { id }
     });
   }
+  async update(id: string, updateReservaDto: any) {
+    return await this.prisma.reserva.update({
+      where: { id },
+      data: updateReservaDto,
+    });
+  }
 }

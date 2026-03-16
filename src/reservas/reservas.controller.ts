@@ -20,4 +20,8 @@ export class ReservasController {
   remove(@Param('id') id: string) {
     return this.reservasService.remove(id);
   }
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateReservaDto: any) {
+    return this.reservasService.update(id, updateReservaDto);
+  }
 }
