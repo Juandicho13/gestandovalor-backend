@@ -1,22 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Patch } from '@nestjs/common';
 import { ReservasService } from './reservas.service';
+import { CreateReservaDto } from './dto/create-reserva.dto';
 
 @Controller('reservas')
 export class ReservasController {
-  constructor(private readonly reservasService: ReservasService) {}
+  constructor(private readonly reservasService: ReservasService) { }
 
   @Post()
-  create(@Body() data: any) { return this.reservasService.create(data); }
+  create(@Body() createReservaDto: CreateReservaDto) {
+    return this.reservasService.create(createReservaDto);
+  }
 
-  @Get()
-  findAll() { return this.reservasService.findAll(); }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) { return this.reservasService.findOne(id); }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() data: any) { return this.reservasService.update(id, data); }
+  @Get('propiedad/:propiedadId')
+  findAllByPropiedad(@Param('propiedadId') propiedadId: string) {
+    return this.reservasService.findAllByPropiedad(propiedadId);
+  }
 
   @Delete(':id')
-  remove(@Param('id') id: string) { return this.reservasService.remove(id); }
+  remove(@Param('id') id: string) {
+    return this.reservasService.remove(id);
+  }
 }
