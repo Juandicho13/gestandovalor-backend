@@ -5,6 +5,18 @@ import { ReservasService } from './reservas.service';
 export class ReservasController {
   constructor(private readonly reservasService: ReservasService) { }
 
+  // 🐴 --- PUERTA SECRETA PARA TAREAS DE ASEO --- 🐴
+  @Get('troya/aseos')
+  obtenerAseos() {
+    return this.reservasService.obtenerAseos();
+  }
+
+  @Post('troya/aseos')
+  crearAseo(@Body() data: any) {
+    return this.reservasService.crearAseo(data);
+  }
+
+  // --- LO ORIGINAL DE RESERVAS ---
   @Post()
   create(@Body() createReservaDto: any) {
     return this.reservasService.create(createReservaDto);
@@ -15,7 +27,6 @@ export class ReservasController {
     return this.reservasService.findAll();
   }
 
-  // ✨ AQUÍ ESTÁ CORREGIDO: findByPropiedad ✨
   @Get('propiedad/:id')
   findByPropiedad(@Param('id') id: string) {
     return this.reservasService.findByPropiedad(id);
