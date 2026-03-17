@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -6,34 +6,36 @@ export class TareasAseoService {
   constructor(private prisma: PrismaService) { }
 
   async create(data: any) {
-    return this.prisma.tareasAseo.create({ data });
+    try {
+      // Guardado crudo, directo y sin relaciones complejas que fallen
+      const nuevaTarea = await this.prisma.tareasAseo.create({
+        data: {
+          propiedad_id: String(data.propiedad_id),
+          empleado_id: String(data.empleado_id),
+          urgencia: String(data.urgencia || 'Normal'),
+          estado: 'Pendiente',
+          tiempo_segundos: 0
+        }
+      });
+      return nuevaTarea;
+    } catch (error) {
+      console.error("🔥 Error forzado en base de datos:", error);
+      // Si falla, ahora sí le avisará al frontend en lugar de decir "Todo bien"
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async findAll() {
-    try {
-      // Intento 1: Traer la tarea con los nombres
-      return await this.prisma.tareasAseo.findMany({
-        include: {
-          propiedad: true,
-          empleado: true
-        }
-      });
-    } catch (error) {
-      console.log("🔥 Prisma se tropezó con las relaciones, activando modo supervivencia...");
-      // Intento 2: Traer la tarea pura sin forzar relaciones
-      return await this.prisma.tareasAseo.findMany();
-    }
+    // Traemos la tabla cruda sin cruzar datos para que nunca se estrelle
+    return await this.prisma.tareasAseo.findMany({
+      orderBy: { created_at: 'desc' }
+    });
   }
 
   async findByEmpleado(empleado_id: string) {
-    try {
-      return await this.prisma.tareasAseo.findMany({
-        where: { empleado_id },
-        include: { propiedad: true }
-      });
-    } catch (e) {
-      return await this.prisma.tareasAseo.findMany({ where: { empleado_id } });
-    }
+    return await this.prisma.tareasAseo.findMany({
+      where: { empleado_id: String(empleado_id) }
+    });
   }
 
   async update(id: string, data: any) {
