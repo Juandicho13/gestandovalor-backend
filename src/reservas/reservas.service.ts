@@ -9,13 +9,13 @@ export class ReservasService {
     return this.prisma.reserva.create({ data });
   }
 
-  // ✨ ESTA ES LA MAGIA QUE FALTA PARA EL AMA DE LLAVES ✨
   async findAll() {
     return this.prisma.reserva.findMany({
-      orderBy: { check_out: 'asc' } // Ordenamos de la más próxima a la más lejana
+      orderBy: { check_out: 'asc' }
     });
   }
 
+  // ✨ AQUÍ ESTÁ CORREGIDO: findByPropiedad ✨
   async findByPropiedad(propiedad_id: string) {
     return this.prisma.reserva.findMany({ where: { propiedad_id } });
   }
