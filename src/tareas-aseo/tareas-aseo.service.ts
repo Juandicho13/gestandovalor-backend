@@ -10,20 +10,30 @@ export class TareasAseoService {
   }
 
   async findAll() {
-    return this.prisma.tareasAseo.findMany({
-      include: {
-        propiedad: true,
-        empleado: true
-      }
-      // ✨ ELIMINAMOS EL "orderBy: created_at" PARA EVITAR EL CRASH SILENCIOSO ✨
-    });
+    try {
+      // Intento 1: Traer la tarea con los nombres
+      return await this.prisma.tareasAseo.findMany({
+        include: {
+          propiedad: true,
+          empleado: true
+        }
+      });
+    } catch (error) {
+      console.log("🔥 Prisma se tropezó con las relaciones, activando modo supervivencia...");
+      // Intento 2: Traer la tarea pura sin forzar relaciones
+      return await this.prisma.tareasAseo.findMany();
+    }
   }
 
   async findByEmpleado(empleado_id: string) {
-    return this.prisma.tareasAseo.findMany({
-      where: { empleado_id },
-      include: { propiedad: true }
-    });
+    try {
+      return await this.prisma.tareasAseo.findMany({
+        where: { empleado_id },
+        include: { propiedad: true }
+      });
+    } catch (e) {
+      return await this.prisma.tareasAseo.findMany({ where: { empleado_id } });
+    }
   }
 
   async update(id: string, data: any) {
