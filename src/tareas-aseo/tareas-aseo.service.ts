@@ -9,24 +9,20 @@ export class TareasAseoService {
     return this.prisma.tareasAseo.create({ data });
   }
 
-  // ✨ ESTA ERA LA FUNCIÓN QUE FALTABA PARA EL AMA DE LLAVES ✨
   async findAll() {
     return this.prisma.tareasAseo.findMany({
       include: {
         propiedad: true,
         empleado: true
-      },
-      orderBy: { created_at: 'desc' }
+      }
+      // ✨ ELIMINAMOS EL "orderBy: created_at" PARA EVITAR EL CRASH SILENCIOSO ✨
     });
   }
 
   async findByEmpleado(empleado_id: string) {
     return this.prisma.tareasAseo.findMany({
       where: { empleado_id },
-      include: {
-        propiedad: true
-      },
-      orderBy: { created_at: 'desc' }
+      include: { propiedad: true }
     });
   }
 
