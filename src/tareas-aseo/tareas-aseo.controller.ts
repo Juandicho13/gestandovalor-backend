@@ -10,6 +10,12 @@ export class TareasAseoController {
     return this.tareasAseoService.create(createTareaDto);
   }
 
+  // ✨ ESTA ES LA PUERTA QUE FALTABA ABRIR ✨
+  @Get()
+  findAll() {
+    return this.tareasAseoService.findAll();
+  }
+
   @Get('empleado/:id')
   findByEmpleado(@Param('id') id: string) {
     return this.tareasAseoService.findByEmpleado(id);
