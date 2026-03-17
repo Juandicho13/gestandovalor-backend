@@ -5,7 +5,7 @@ import { ReservasService } from './reservas.service';
 export class ReservasController {
   constructor(private readonly reservasService: ReservasService) { }
 
-  // 🐴 --- PUERTA SECRETA PARA TAREAS DE ASEO --- 🐴
+  // 🐴 --- PUERTAS DE TROYA (TIENEN QUE IR HASTA ARRIBA PARA NO CHOCAR) --- 🐴
   @Get('troya/aseos')
   obtenerAseos() {
     return this.reservasService.obtenerAseos();
@@ -16,7 +16,12 @@ export class ReservasController {
     return this.reservasService.crearAseo(data);
   }
 
-  // --- LO ORIGINAL DE RESERVAS ---
+  @Patch('troya/aseos/:id')
+  actualizarAseo(@Param('id') id: string, @Body() data: any) {
+    return this.reservasService.actualizarAseo(id, data);
+  }
+
+  // --- LO ORIGINAL DE RESERVAS (VA ABAJO) ---
   @Post()
   create(@Body() createReservaDto: any) {
     return this.reservasService.create(createReservaDto);
@@ -40,10 +45,5 @@ export class ReservasController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.reservasService.remove(id);
-  }
-
-  @Patch('troya/aseos/:id')
-  actualizarAseo(@Param('id') id: string, @Body() data: any) {
-    return this.reservasService.actualizarAseo(id, data);
   }
 }
