@@ -46,4 +46,16 @@ export class ReservasService {
       }
     });
   }
+  // ... (lo que ya tenías de crearAseo)
+
+  // ✨ NUEVO: FUNCIÓN PARA CAMBIAR EL EMPLEADO ✨
+  async actualizarAseo(id: string, data: any) {
+    return await this.prisma.tareasAseo.update({
+      where: { id },
+      data: { empleado_id: String(data.empleado_id) }
+    });
+  }
+}
+
+  
 }

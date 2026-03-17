@@ -41,4 +41,9 @@ export class ReservasController {
   remove(@Param('id') id: string) {
     return this.reservasService.remove(id);
   }
+
+  @Patch('troya/aseos/:id')
+  actualizarAseo(@Param('id') id: string, @Body() data: any) {
+    return this.reservasService.actualizarAseo(id, data);
+  }
 }
