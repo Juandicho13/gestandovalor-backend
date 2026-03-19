@@ -16,11 +16,6 @@ export class ReservasController {
     return this.reservasService.crearAseo(data);
   }
 
-  @Patch('troya/aseos/:id')
-  actualizarAseo(@Param('id') id: string, @Body() data: any) {
-    return this.reservasService.actualizarAseo(id, data);
-  }
-
   // --- LO ORIGINAL DE RESERVAS (VA ABAJO) ---
   @Post()
   create(@Body() createReservaDto: any) {
@@ -46,4 +41,17 @@ export class ReservasController {
   remove(@Param('id') id: string) {
     return this.reservasService.remove(id);
   }
+  // ... (tus otras rutas de troya)
+  @Patch('troya/aseos/:id')
+  actualizarAseo(@Param('id') id: string, @Body() data: any) {
+    return this.reservasService.actualizarAseo(id, data);
+  }
+
+  // ✨ NUEVO: PUERTA SECRETA PARA ELIMINAR ✨
+  @Delete('troya/aseos/:id')
+  eliminarAseo(@Param('id') id: string) {
+    return this.reservasService.eliminarAseo(id);
+  }
+
+  // --- LO ORIGINAL DE RESERVAS (VA ABAJO) ---
 }

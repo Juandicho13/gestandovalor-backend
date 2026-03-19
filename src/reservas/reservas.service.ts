@@ -54,4 +54,10 @@ export class ReservasService {
       data: { empleado_id: String(data.empleado_id) }
     });
   }
-}
+  // ✨ FUNCIÓN PARA BORRAR TAREAS FANTASMA ✨
+  async eliminarAseo(id: string) {
+    return await this.prisma.tareasAseo.delete({
+      where: { id }
+    });
+  }
+} // <-- Esta es la última llave del archivo
