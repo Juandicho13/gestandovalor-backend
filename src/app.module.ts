@@ -7,7 +7,6 @@ import { UsuariosController } from './usuarios/usuarios.controller';
 import { AuthController } from './auth/auth.controller';
 import { PropiedadesModule } from './propiedades/propiedades.module';
 import { ReservasModule } from './reservas/reservas.module';
-import { InventariosModule } from './inventarios/inventarios.module';
 import { TareasAseoModule } from './tareas-aseo/tareas-aseo.module';
 import { LiquidacionesModule } from './liquidaciones/liquidaciones.module';
 import { BlogModule } from './blog/blog.module';
@@ -15,21 +14,19 @@ import { DisponibilidadModule } from './disponibilidad/disponibilidad.module';
 
 @Module({
   imports: [
-    ProspectosModule, 
-    PropiedadesModule, 
-    ReservasModule, 
-    InventariosModule, 
-    TareasAseoModule, 
-    LiquidacionesModule, // <-- Tu módulo ya trae el controlador y el servicio juntos automáticamente
-    BlogModule, 
+    ProspectosModule,
+    PropiedadesModule,
+    ReservasModule,
+    TareasAseoModule,
+    LiquidacionesModule,
+    BlogModule,
     DisponibilidadModule
   ],
   controllers: [
-    AppController, 
-    UsuariosController, 
+    AppController,
+    UsuariosController,
     AuthController
-    // Eliminamos de aquí el LiquidacionesController
   ],
   providers: [AppService, PrismaService],
 })
-export class AppModule {}
+export class AppModule { }
