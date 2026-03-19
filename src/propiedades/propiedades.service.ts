@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class PropiedadesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(data: any) {
     return await this.prisma.propiedad.create({ data });
@@ -17,12 +17,12 @@ export class PropiedadesService {
 
   async findOne(id: string) {
     return await this.prisma.propiedad.findUnique({
-      where: { id },
-      include: { inventario: true }
+      where: { id }
+      // ✨ ¡ELIMINAMOS EL INCLUDE DE INVENTARIO PORQUE AHORA ES UN JSON NATIVO! ✨
     });
   }
 
-  // ✨ LA ÚNICA FUNCIÓN UPDATE (Sirve para todo: links, precios, textos) ✨
+  // ✨ LA ÚNICA FUNCIÓN UPDATE (Sirve para todo: links, precios, textos, E INVENTARIO) ✨
   async update(id: string, data: any) {
     try {
       return await this.prisma.propiedad.update({
