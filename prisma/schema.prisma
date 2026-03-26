@@ -156,6 +156,9 @@ model TareasAseo {
   tiempo_segundos   Int       @default(0)
   novedad_reportada String?
   
+  // ✨ NUEVO CAJÓN MÁGICO PARA EL REPORTE DEL EMPLEADO ✨
+  reporte_empleado  Json?
+  
   created_at        DateTime  @default(now())
   completed_at      DateTime?
 }
