@@ -12,6 +12,9 @@ import { LiquidacionesModule } from './liquidaciones/liquidaciones.module';
 import { BlogModule } from './blog/blog.module';
 import { DisponibilidadModule } from './disponibilidad/disponibilidad.module';
 
+// ✨ AQUÍ IMPORTAMOS EL NUEVO MÓDULO DE TARIFAS
+import { TarifasModule } from './tarifas/tarifas.module';
+
 @Module({
   imports: [
     ProspectosModule,
@@ -20,7 +23,8 @@ import { DisponibilidadModule } from './disponibilidad/disponibilidad.module';
     TareasAseoModule,
     LiquidacionesModule,
     BlogModule,
-    DisponibilidadModule
+    DisponibilidadModule,
+    TarifasModule // ✨ Y AQUÍ LO MATRICULAMOS PARA QUE EL SERVIDOR LO ESCUCHE
   ],
   controllers: [
     AppController,
