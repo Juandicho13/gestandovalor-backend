@@ -3,7 +3,7 @@ import { PropiedadesService } from './propiedades.service';
 
 @Controller('propiedades')
 export class PropiedadesController {
-  constructor(private readonly propiedadesService: PropiedadesService) {}
+  constructor(private readonly propiedadesService: PropiedadesService) { }
 
   @Post()
   create(@Body() body: any) {
@@ -28,5 +28,14 @@ export class PropiedadesController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.propiedadesService.remove(id);
+  }
+
+  @Get('ciudades')
+  obtenerCiudades() {
+    return this.propiedadesService.obtenerCiudades();
+  }
+  @Get('resultados')
+  obtenerResultadosBusqueda() {
+    return this.propiedadesService.obtenerResultadosBusqueda();
   }
 }

@@ -35,9 +35,44 @@ export class PropiedadesService {
     }
   }
 
+  async obtenerCiudades() {
+    return this.prisma.propiedad.findMany({
+      select: {
+        ciudad: true,
+        departamento: true,
+      },
+      distinct: ['ciudad', 'departamento'],
+    });
+  }
+
   async remove(id: string) {
     return await this.prisma.propiedad.delete({
       where: { id }
     });
+  }
+
+  // ✨ NUEVA FUNCIÓN OPTIMIZADA PARA RESULTADOS ✨
+  async obtenerResultadosBusqueda() {
+    // 1. Buscamos solo los campos necesarios
+    const propiedades = await this.prisma.propiedad.findMany({
+      select: {
+        id: true,
+        titulo: true,
+        ciudad: true,
+        departamento: true,
+        tipo_propiedad: true,
+        precio_noche: true,
+        camas: true,
+        banos: true,
+        capacidad_huespedes: true,
+        fotos: true,
+      },
+    });
+
+    // 2. Interceptamos la respuesta y enviamos SOLO la primera foto
+    return propiedades.map(prop => ({
+      ...prop,
+      fotos: prop.fotos && prop.fotos.length > 0 ? [prop.fotos[0]] : [],
+    }));
   }
 }
