@@ -18,7 +18,6 @@ export class PropiedadesService {
   async findOne(id: string) {
     return await this.prisma.propiedad.findUnique({
       where: { id }
-      // ✨ ¡ELIMINAMOS EL INCLUDE DE INVENTARIO PORQUE AHORA ES UN JSON NATIVO! ✨
     });
   }
 
@@ -44,6 +43,7 @@ export class PropiedadesService {
       distinct: ['ciudad', 'departamento'],
     });
   }
+
 
   async remove(id: string) {
     return await this.prisma.propiedad.delete({
@@ -75,4 +75,5 @@ export class PropiedadesService {
       fotos: prop.fotos && prop.fotos.length > 0 ? [prop.fotos[0]] : [],
     }));
   }
+
 }
