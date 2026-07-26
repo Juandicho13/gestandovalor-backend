@@ -15,6 +15,16 @@ export class PropiedadesController {
     return this.propiedadesService.findAll();
   }
 
+  @Get('ciudades')
+  obtenerCiudades() {
+    return this.propiedadesService.obtenerCiudades();
+  }
+
+  @Get('resultados')
+  obtenerResultadosBusqueda() {
+    return this.propiedadesService.obtenerResultadosBusqueda();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.propiedadesService.findOne(id);
@@ -28,14 +38,5 @@ export class PropiedadesController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.propiedadesService.remove(id);
-  }
-
-  @Get('ciudades')
-  obtenerCiudades() {
-    return this.propiedadesService.obtenerCiudades();
-  }
-  @Get('resultados')
-  obtenerResultadosBusqueda() {
-    return this.propiedadesService.obtenerResultadosBusqueda();
   }
 }

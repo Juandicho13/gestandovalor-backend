@@ -51,9 +51,7 @@ export class PropiedadesService {
     });
   }
 
-  // ✨ NUEVA FUNCIÓN OPTIMIZADA PARA RESULTADOS ✨
   async obtenerResultadosBusqueda() {
-    // 1. Buscamos solo los campos necesarios
     const propiedades = await this.prisma.propiedad.findMany({
       select: {
         id: true,
@@ -66,10 +64,13 @@ export class PropiedadesService {
         banos: true,
         capacidad_huespedes: true,
         fotos: true,
+        tarifa_aseo: true,
+        huespedes_base: true,
+        precio_huesped_extra: true,
+        precio_mascota: true,
       },
     });
 
-    // 2. Interceptamos la respuesta y enviamos SOLO la primera foto
     return propiedades.map(prop => ({
       ...prop,
       fotos: prop.fotos && prop.fotos.length > 0 ? [prop.fotos[0]] : [],
