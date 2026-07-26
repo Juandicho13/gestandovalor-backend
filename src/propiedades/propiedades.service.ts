@@ -51,6 +51,7 @@ export class PropiedadesService {
     });
   }
 
+  // ✨ NUEVA FUNCIÓN OPTIMIZADA PARA RESULTADOS ✨
   async obtenerResultadosBusqueda() {
     const propiedades = await this.prisma.propiedad.findMany({
       select: {
@@ -68,6 +69,9 @@ export class PropiedadesService {
         huespedes_base: true,
         precio_huesped_extra: true,
         precio_mascota: true,
+        tarifas_especiales: {
+          select: { fecha_inicio: true, fecha_fin: true, precio: true }
+        }
       },
     });
 
