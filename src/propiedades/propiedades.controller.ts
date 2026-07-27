@@ -10,6 +10,10 @@ export class PropiedadesController {
   create(@Body() body: any) {
     return this.propiedadesService.create(body);
   }
+  @Post('subir-foto')
+  subirFoto(@Body() body: { imagen: string; propiedadId?: string }) {
+    return this.propiedadesService.subirFoto(body.imagen, body.propiedadId);
+  }
 
   @Get()
   findAll() {

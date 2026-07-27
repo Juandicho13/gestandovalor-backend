@@ -1,8 +1,14 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { createClient } from '@supabase/supabase-js';
 
 @Injectable()
 export class PropiedadesService {
+  private supabase = createClient(
+    process.env.SUPABASE_URL as string,
+    process.env.SUPABASE_SERVICE_KEY as string,
+  );
+
   constructor(private prisma: PrismaService) { }
 
   async create(data: any) {
@@ -118,6 +124,39 @@ export class PropiedadesService {
       ...resto,
       numFotos: fotos ? fotos.length : 0,
     }));
+  }
+  // Recibe una imagen en base64, la sube a Storage y devuelve su URL pública
+  async subirFoto(dataUrl: string, propiedadId?: string) {
+    const match = dataUrl.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
+    if (!match) {
+      throw new HttpException(
+        'Formato de imagen no válido. Debe ser JPG, PNG o WEBP.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const mime = match[1];
+    const buffer = Buffer.from(match[2], 'base64');
+    const extension = mime.split('/')[1].replace('jpeg', 'jpg');
+    const carpeta = propiedadId || 'sin-asignar';
+    const nombre = `${carpeta}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${extension}`;
+
+    const { error } = await this.supabase.storage
+      .from('fotos-propiedades')
+      .upload(nombre, buffer, { contentType: mime });
+
+    if (error) {
+      throw new HttpException(
+        `No se pudo subir la foto: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    const { data } = this.supabase.storage
+      .from('fotos-propiedades')
+      .getPublicUrl(nombre);
+
+    return { url: data.publicUrl };
   }
 
 }
