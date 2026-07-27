@@ -74,13 +74,17 @@ export class PropiedadesService {
         huespedes_base: true,
         precio_huesped_extra: true,
         precio_mascota: true,
+        fotos: true,
         tarifas_especiales: {
           select: { fecha_inicio: true, fecha_fin: true, precio: true }
         }
       },
     });
 
-    return propiedades;
+    return propiedades.map((prop) => ({
+      ...prop,
+      fotos: prop.fotos && prop.fotos.length > 0 ? [prop.fotos[0]] : [],
+    }));
   }
   // Devuelve una foto como imagen binaria en vez de base64 dentro del JSON
   async obtenerFoto(id: string, indice: number) {
@@ -111,19 +115,13 @@ export class PropiedadesService {
       throw new HttpException('Propiedad no encontrada', HttpStatus.NOT_FOUND);
     }
 
-    const { fotos, ...resto } = prop;
-    return { ...resto, numFotos: fotos ? fotos.length : 0 };
+    return prop;
   }
   // Lista completa para el panel admin, sin las fotos en base64
   async obtenerListaAdmin() {
-    const propiedades = await this.prisma.propiedad.findMany({
+    return this.prisma.propiedad.findMany({
       orderBy: { created_at: 'desc' },
     });
-
-    return propiedades.map(({ fotos, ...resto }) => ({
-      ...resto,
-      numFotos: fotos ? fotos.length : 0,
-    }));
   }
   // Recibe una imagen en base64, la sube a Storage y devuelve su URL pública
   async subirFoto(dataUrl: string, propiedadId?: string) {
