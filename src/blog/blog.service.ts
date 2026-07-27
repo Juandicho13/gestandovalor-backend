@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class BlogService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   create(data: any) {
     return this.prisma.articuloBlog.create({
@@ -20,26 +20,42 @@ export class BlogService {
 
   findAll() {
     return this.prisma.articuloBlog.findMany({
-      orderBy: { createdAt: 'desc' } 
+      orderBy: { createdAt: 'desc' }
+    });
+  }
+
+  // Para la lista del blog: sin "contenido", ahí es donde viven las fotos incrustadas del artículo completo
+  findAllResumen() {
+    return this.prisma.articuloBlog.findMany({
+      where: { estado: 'Publicado' },
+      select: {
+        id: true,
+        titulo: true,
+        categoria: true,
+        tiempo_lectura: true,
+        foto_url: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
   findOne(id: string) {
     return this.prisma.articuloBlog.findUnique({
-      where: { id: Number(id) } 
+      where: { id: Number(id) }
     });
   }
 
   update(id: string, updateData: any) {
     return this.prisma.articuloBlog.update({
-      where: { id: Number(id) }, 
+      where: { id: Number(id) },
       data: updateData,
     });
   }
 
   remove(id: string) {
     return this.prisma.articuloBlog.delete({
-      where: { id: Number(id) } 
+      where: { id: Number(id) }
     });
   }
 }

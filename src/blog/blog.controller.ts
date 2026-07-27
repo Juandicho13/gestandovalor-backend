@@ -3,7 +3,7 @@ import { BlogService } from './blog.service';
 
 @Controller('blog')
 export class BlogController {
-  constructor(private readonly blogService: BlogService) {}
+  constructor(private readonly blogService: BlogService) { }
 
   @Post()
   create(@Body() createBlogDto: any) {
@@ -13,6 +13,11 @@ export class BlogController {
   @Get()
   findAll() {
     return this.blogService.findAll();
+  }
+
+  @Get('resumen')
+  findAllResumen() {
+    return this.blogService.findAllResumen();
   }
 
   @Get(':id')
