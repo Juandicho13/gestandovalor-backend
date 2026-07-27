@@ -25,6 +25,12 @@ export class PropiedadesController {
   obtenerResultadosBusqueda() {
     return this.propiedadesService.obtenerResultadosBusqueda();
   }
+
+  @Get('admin')
+  obtenerListaAdmin() {
+    return this.propiedadesService.obtenerListaAdmin();
+  }
+
   @Get(':id/foto/:indice')
   async obtenerFoto(
     @Param('id') id: string,
@@ -46,6 +52,11 @@ export class PropiedadesController {
   @Get(':id/detalle')
   obtenerDetalleSuite(@Param('id') id: string) {
     return this.propiedadesService.obtenerDetalleSuite(id);
+  }
+
+  @Get('admin')
+  obtenerListaAdmin() {
+    return this.propiedadesService.obtenerListaAdmin();
   }
 
   @Get(':id')
