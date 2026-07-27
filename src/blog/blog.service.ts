@@ -34,6 +34,7 @@ export class BlogService {
         tiempo_lectura: true,
         foto_url: true,
         createdAt: true,
+        estado: true,
       },
       orderBy: { createdAt: 'desc' },
     });
