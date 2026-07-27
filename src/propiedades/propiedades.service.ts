@@ -108,5 +108,16 @@ export class PropiedadesService {
     const { fotos, ...resto } = prop;
     return { ...resto, numFotos: fotos ? fotos.length : 0 };
   }
+  // Lista completa para el panel admin, sin las fotos en base64
+  async obtenerListaAdmin() {
+    const propiedades = await this.prisma.propiedad.findMany({
+      orderBy: { created_at: 'desc' },
+    });
+
+    return propiedades.map(({ fotos, ...resto }) => ({
+      ...resto,
+      numFotos: fotos ? fotos.length : 0,
+    }));
+  }
 
 }
