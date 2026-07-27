@@ -27,7 +27,6 @@ export class BlogService {
   // Para la lista del blog: sin "contenido", ahí es donde viven las fotos incrustadas del artículo completo
   findAllResumen() {
     return this.prisma.articuloBlog.findMany({
-      where: { estado: 'Publicado' },
       select: {
         id: true,
         titulo: true,
