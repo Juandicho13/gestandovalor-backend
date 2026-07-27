@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
+import type { Response } from 'express';
 import { PropiedadesService } from './propiedades.service';
 
 @Controller('propiedades')
@@ -23,6 +24,24 @@ export class PropiedadesController {
   @Get('resultados')
   obtenerResultadosBusqueda() {
     return this.propiedadesService.obtenerResultadosBusqueda();
+  }
+  @Get(':id/foto/:indice')
+  async obtenerFoto(
+    @Param('id') id: string,
+    @Param('indice') indice: string,
+    @Res() res: Response,
+  ) {
+    const { mime, buffer } = await this.propiedadesService.obtenerFoto(
+      id,
+      parseInt(indice, 10),
+    );
+
+    res.set({
+      'Content-Type': mime,
+      'Content-Length': buffer.length,
+      'Cache-Control': 'public, max-age=31536000, immutable',
+    });
+    res.end(buffer);
   }
 
   @Get(':id')

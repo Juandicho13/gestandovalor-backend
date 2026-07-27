@@ -64,7 +64,6 @@ export class PropiedadesService {
         camas: true,
         banos: true,
         capacidad_huespedes: true,
-        fotos: true,
         tarifa_aseo: true,
         huespedes_base: true,
         precio_huesped_extra: true,
@@ -75,10 +74,26 @@ export class PropiedadesService {
       },
     });
 
-    return propiedades.map(prop => ({
-      ...prop,
-      fotos: prop.fotos && prop.fotos.length > 0 ? [prop.fotos[0]] : [],
-    }));
-  }
+    return propiedades;
+  // Devuelve una foto como imagen binaria en vez de base64 dentro del JSON
+  async obtenerFoto(id: string, indice: number) {
+      const prop = await this.prisma.propiedad.findUnique({
+        where: { id },
+        select: { fotos: true },
+      });
 
-}
+      if (!prop || !prop.fotos || !prop.fotos[indice]) {
+        throw new HttpException('Foto no encontrada', HttpStatus.NOT_FOUND);
+      }
+
+      const dataUrl = prop.fotos[indice];
+      const match = dataUrl.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
+
+      if (!match) {
+        throw new HttpException('Formato de foto inválido', HttpStatus.BAD_REQUEST);
+      }
+
+      return { mime: match[1], buffer: Buffer.from(match[2], 'base64') };
+    }
+
+  }
