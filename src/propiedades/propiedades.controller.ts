@@ -49,14 +49,10 @@ export class PropiedadesController {
     });
     res.end(buffer);
   }
+
   @Get(':id/detalle')
   obtenerDetalleSuite(@Param('id') id: string) {
     return this.propiedadesService.obtenerDetalleSuite(id);
-  }
-
-  @Get('admin')
-  obtenerListaAdmin() {
-    return this.propiedadesService.obtenerListaAdmin();
   }
 
   @Get(':id')
