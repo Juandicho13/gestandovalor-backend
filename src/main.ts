@@ -3,11 +3,13 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 // ✨ IMPORTA ESTO ARRIBA ✨
 import { json, urlencoded } from 'express';
+import * as compression from 'compression';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors();
+  app.use(compression());
 
   // ✨ AQUÍ ESTÁ LA MAGIA: AMPLIAMOS EL LÍMITE A 50MB ✨
   app.use(json({ limit: '50mb' }));
