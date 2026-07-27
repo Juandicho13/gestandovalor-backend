@@ -14,6 +14,10 @@ export class PropiedadesController {
   subirFoto(@Body() body: { imagen: string; propiedadId?: string }) {
     return this.propiedadesService.subirFoto(body.imagen, body.propiedadId);
   }
+  @Post('url-subida')
+  crearUrlSubida(@Body() body: { extension?: string; propiedadId?: string }) {
+    return this.propiedadesService.crearUrlSubida(body.extension ?? 'webp', body.propiedadId);
+  }
 
   @Get()
   findAll() {

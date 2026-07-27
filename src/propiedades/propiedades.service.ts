@@ -158,5 +158,37 @@ export class PropiedadesService {
 
     return { url: data.publicUrl };
   }
+  // Emite un permiso temporal para que el navegador suba la foto directo a Storage
+  async crearUrlSubida(extension: string, propiedadId?: string) {
+    const permitidas = ['jpg', 'jpeg', 'png', 'webp'];
+    const ext = (extension || 'webp').toLowerCase().replace('jpeg', 'jpg');
+
+    if (!permitidas.includes(ext)) {
+      throw new HttpException(
+        'Formato no permitido. Solo JPG, PNG o WEBP.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const carpeta = propiedadId || 'sin-asignar';
+    const nombre = `${carpeta}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+
+    const { data, error } = await this.supabase.storage
+      .from('fotos-propiedades')
+      .createSignedUploadUrl(nombre);
+
+    if (error) {
+      throw new HttpException(
+        `No se pudo preparar la subida: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    const { data: publico } = this.supabase.storage
+      .from('fotos-propiedades')
+      .getPublicUrl(nombre);
+
+    return { signedUrl: data.signedUrl, publicUrl: publico.publicUrl };
+  }
 
 }
