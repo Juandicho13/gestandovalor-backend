@@ -43,6 +43,10 @@ export class PropiedadesController {
     });
     res.end(buffer);
   }
+  @Get(':id/detalle')
+  obtenerDetalleSuite(@Param('id') id: string) {
+    return this.propiedadesService.obtenerDetalleSuite(id);
+  }
 
   @Get(':id')
   findOne(@Param('id') id: string) {

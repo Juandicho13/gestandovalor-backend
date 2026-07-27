@@ -83,6 +83,7 @@ export class PropiedadesService {
       select: { fotos: true },
     });
 
+
     if (!prop || !prop.fotos || !prop.fotos[indice]) {
       throw new HttpException('Foto no encontrada', HttpStatus.NOT_FOUND);
     }
@@ -95,6 +96,17 @@ export class PropiedadesService {
     }
 
     return { mime: match[1], buffer: Buffer.from(match[2], 'base64') };
+  }
+  // Detalle de una suite sin las fotos pesadas — solo manda cuántas hay
+  async obtenerDetalleSuite(id: string) {
+    const prop = await this.prisma.propiedad.findUnique({ where: { id } });
+
+    if (!prop) {
+      throw new HttpException('Propiedad no encontrada', HttpStatus.NOT_FOUND);
+    }
+
+    const { fotos, ...resto } = prop;
+    return { ...resto, numFotos: fotos ? fotos.length : 0 };
   }
 
 }
