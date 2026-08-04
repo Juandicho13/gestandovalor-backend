@@ -29,7 +29,9 @@ const DATOS_RELACIONADOS = {
       direccion: true,
       ciudad: true,
       tipo_propiedad: true,
-      fotos: true,
+      // Sin 'fotos': el radar consulta este endpoint cada 30 segundos y las
+      // propiedades viejas guardan las imágenes en base64. Los paneles ya
+      // resuelven la foto desde /propiedades.
     },
   },
   empleado: {
