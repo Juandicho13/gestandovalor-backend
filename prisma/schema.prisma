@@ -38,14 +38,11 @@ enum RolUsuario {
 
 model Usuario {
   id        String     @id @default(uuid())
-  nombre    String
-  username  String     @unique
-  password  String
-  rol       RolUsuario
+  nombre    String     
+  username  String     @unique 
+  password  String     
+  rol       RolUsuario 
   createdAt DateTime   @default(now())
-
-  // Último "latido" del panel. Sirve para saber si está en línea (Radar del Equipo)
-  ultima_actividad DateTime?
 
   // Relaciones
   propiedades  Propiedad[]  @relation("PropietarioPropiedad")
@@ -159,22 +156,15 @@ model TareasAseo {
   empleado_id       String?
   empleado          Usuario?  @relation("EmpleadoAseo", fields: [empleado_id], references: [id])
   
-  urgencia          String
-  estado            String    @default("Pendiente")
+  urgencia          String    
+  estado            String    @default("Pendiente") 
   tiempo_segundos   Int       @default(0)
-
-  // ✨ NOVEDAD REPORTADA POR EL LIMPIADOR ✨
-  novedad_reportada   String?
-  novedad_fotos       String[]  @default([])
-  novedad_estado      String?   // "Pendiente" | "Resuelta"
-  novedad_at          DateTime?
-  novedad_resuelta_at DateTime?
-
+  novedad_reportada String?
+  
   // ✨ NUEVO CAJÓN MÁGICO PARA EL REPORTE DEL EMPLEADO ✨
   reporte_empleado  Json?
-
+  
   created_at        DateTime  @default(now())
-  iniciada_at       DateTime?
   completed_at      DateTime?
 }
 
