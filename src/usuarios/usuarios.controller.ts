@@ -1,16 +1,10 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException, HttpStatus } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaClient } from '@prisma/client';
 
-// El panel solo necesita saber cuántos apartamentos tiene cada quién y cuáles son.
-// Traer la propiedad completa arrastra el array de fotos y revienta la respuesta.
-const PROPIEDADES_RESUMIDAS = {
-  select: { id: true, titulo: true },
-};
+const prisma = new PrismaClient();
 
 @Controller('usuarios')
 export class UsuariosController {
-
-  constructor(private prisma: PrismaService) { }
 
   // 1. CREAR USUARIO Y VINCULAR PROPIEDADES
   @Post()
@@ -30,9 +24,9 @@ export class UsuariosController {
         };
       }
 
-      const nuevoUsuario = await this.prisma.usuario.create({
+      const nuevoUsuario = await prisma.usuario.create({
         data: dataToCreate,
-        include: { propiedades: PROPIEDADES_RESUMIDAS } // Le decimos que nos devuelva los datos con sus apartamentos
+        include: { propiedades: true } // Le decimos que nos devuelva los datos con sus apartamentos
       });
       return { mensaje: 'Usuario creado con éxito', usuario: nuevoUsuario };
     } catch (error) {
@@ -44,27 +38,21 @@ export class UsuariosController {
   @Get()
   async obtenerUsuarios() {
     try {
-      return await this.prisma.usuario.findMany({
-        include: { propiedades: PROPIEDADES_RESUMIDAS }, // <-- ESTO ENCIENDE LOS CHULITOS DORADOS AL EDITAR
+      return await prisma.usuario.findMany({
+        include: { propiedades: true }, // <-- ESTO ENCIENDE LOS CHULITOS DORADOS AL EDITAR
         orderBy: { createdAt: 'desc' }
       });
     } catch (error) {
-      // Sin esto el error real se pierde y en Render solo se ve un 500 mudo
-      console.error('🔥 Error al obtener usuarios:', error);
-      throw new HttpException(
-        `Error al obtener usuarios: ${error.message}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Error al obtener usuarios', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   // 3. LOGIN
   @Post('login')
   async login(@Body() body: any) {
-    const usuario = await this.prisma.usuario.findFirst({
+    const usuario = await prisma.usuario.findFirst({
       where: { username: body.username, password: body.password },
-      // El login se guarda en localStorage; con las fotos completas se pasa del límite del navegador
-      include: { propiedades: PROPIEDADES_RESUMIDAS }
+      include: { propiedades: true }
     });
 
     if (!usuario) throw new HttpException('Credenciales incorrectas', HttpStatus.UNAUTHORIZED);
@@ -73,25 +61,7 @@ export class UsuariosController {
     return { mensaje: 'Login exitoso', usuario: usuarioSinPass };
   }
 
-  // 4. LATIDO: el panel avisa que el usuario sigue conectado (Radar del Equipo)
-  @Post(':id/latido')
-  async registrarLatido(@Param('id') id: string, @Body() body: any) {
-    try {
-      // Al cerrar sesión mandamos activo: false para que salga Offline de una vez
-      const sigueConectado = body?.activo !== false;
-
-      await this.prisma.usuario.update({
-        where: { id },
-        data: { ultima_actividad: sigueConectado ? new Date() : null },
-      });
-
-      return { ok: true };
-    } catch (error) {
-      throw new HttpException('No se pudo registrar la actividad', HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  // 5. ACTUALIZAR USUARIO Y SUS PROPIEDADES
+  // 4. ACTUALIZAR USUARIO Y SUS PROPIEDADES
   @Patch(':id')
   async actualizarUsuario(@Param('id') id: string, @Body() body: any) {
     try {
@@ -113,10 +83,10 @@ export class UsuariosController {
         dataToUpdate.propiedades = { set: [] };
       }
 
-      const usuarioActualizado = await this.prisma.usuario.update({
+      const usuarioActualizado = await prisma.usuario.update({
         where: { id: id },
         data: dataToUpdate,
-        include: { propiedades: PROPIEDADES_RESUMIDAS }
+        include: { propiedades: true }
       });
 
       return { mensaje: 'Usuario actualizado', usuario: usuarioActualizado };
@@ -125,11 +95,11 @@ export class UsuariosController {
     }
   }
 
-  // 6. BORRAR USUARIO
+  // 5. BORRAR USUARIO
   @Delete(':id')
   async eliminarUsuario(@Param('id') id: string) {
     try {
-      await this.prisma.usuario.delete({ where: { id: id } });
+      await prisma.usuario.delete({ where: { id: id } });
       return { mensaje: 'Usuario eliminado correctamente' };
     } catch (error) {
       throw new HttpException('Error al eliminar el usuario', HttpStatus.INTERNAL_SERVER_ERROR);
