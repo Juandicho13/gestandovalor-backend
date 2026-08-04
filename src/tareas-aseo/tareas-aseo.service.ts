@@ -114,6 +114,13 @@ export class TareasAseoService {
       );
     }
 
+    // Si el limpiador quitó fotos al corregir su reporte, no las dejamos botadas en Storage
+    const anterior = await this.prisma.tareasAseo.findUnique({ where: { id } });
+    const descartadas = (anterior?.novedad_fotos || []).filter(
+      (url) => !fotos.includes(url),
+    );
+    if (descartadas.length > 0) await this.borrarFotosDeStorage(descartadas);
+
     return this.prisma.tareasAseo.update({
       where: { id },
       data: {
