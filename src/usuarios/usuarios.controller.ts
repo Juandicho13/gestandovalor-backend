@@ -61,7 +61,25 @@ export class UsuariosController {
     return { mensaje: 'Login exitoso', usuario: usuarioSinPass };
   }
 
-  // 4. ACTUALIZAR USUARIO Y SUS PROPIEDADES
+  // 4. LATIDO: el panel avisa que el usuario sigue conectado (Radar del Equipo)
+  @Post(':id/latido')
+  async registrarLatido(@Param('id') id: string, @Body() body: any) {
+    try {
+      // Al cerrar sesión mandamos activo: false para que salga Offline de una vez
+      const sigueConectado = body?.activo !== false;
+
+      await prisma.usuario.update({
+        where: { id },
+        data: { ultima_actividad: sigueConectado ? new Date() : null },
+      });
+
+      return { ok: true };
+    } catch (error) {
+      throw new HttpException('No se pudo registrar la actividad', HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  // 5. ACTUALIZAR USUARIO Y SUS PROPIEDADES
   @Patch(':id')
   async actualizarUsuario(@Param('id') id: string, @Body() body: any) {
     try {
@@ -95,7 +113,7 @@ export class UsuariosController {
     }
   }
 
-  // 5. BORRAR USUARIO
+  // 6. BORRAR USUARIO
   @Delete(':id')
   async eliminarUsuario(@Param('id') id: string) {
     try {
