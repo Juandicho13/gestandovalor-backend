@@ -43,6 +43,8 @@ export class UsuariosController {
         orderBy: { createdAt: 'desc' }
       });
     } catch (error) {
+      // Sin esta línea el error real se pierde: en Render solo se ve un 500 mudo
+      console.error('🔥 Error al obtener usuarios:', error);
       throw new HttpException('Error al obtener usuarios', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
