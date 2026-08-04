@@ -1,10 +1,16 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException, HttpStatus } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
 
-const prisma = new PrismaClient();
+// El panel solo necesita saber cuántos apartamentos tiene cada quién y cuáles son.
+// Traer la propiedad completa arrastra el array de fotos y revienta la respuesta.
+const PROPIEDADES_RESUMIDAS = {
+  select: { id: true, titulo: true },
+};
 
 @Controller('usuarios')
 export class UsuariosController {
+
+  constructor(private prisma: PrismaService) { }
 
   // 1. CREAR USUARIO Y VINCULAR PROPIEDADES
   @Post()
@@ -24,9 +30,9 @@ export class UsuariosController {
         };
       }
 
-      const nuevoUsuario = await prisma.usuario.create({
+      const nuevoUsuario = await this.prisma.usuario.create({
         data: dataToCreate,
-        include: { propiedades: true } // Le decimos que nos devuelva los datos con sus apartamentos
+        include: { propiedades: PROPIEDADES_RESUMIDAS } // Le decimos que nos devuelva los datos con sus apartamentos
       });
       return { mensaje: 'Usuario creado con éxito', usuario: nuevoUsuario };
     } catch (error) {
@@ -38,21 +44,27 @@ export class UsuariosController {
   @Get()
   async obtenerUsuarios() {
     try {
-      return await prisma.usuario.findMany({
-        include: { propiedades: true }, // <-- ESTO ENCIENDE LOS CHULITOS DORADOS AL EDITAR
+      return await this.prisma.usuario.findMany({
+        include: { propiedades: PROPIEDADES_RESUMIDAS }, // <-- ESTO ENCIENDE LOS CHULITOS DORADOS AL EDITAR
         orderBy: { createdAt: 'desc' }
       });
     } catch (error) {
-      throw new HttpException('Error al obtener usuarios', HttpStatus.INTERNAL_SERVER_ERROR);
+      // Sin esto el error real se pierde y en Render solo se ve un 500 mudo
+      console.error('🔥 Error al obtener usuarios:', error);
+      throw new HttpException(
+        `Error al obtener usuarios: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
   // 3. LOGIN
   @Post('login')
   async login(@Body() body: any) {
-    const usuario = await prisma.usuario.findFirst({
+    const usuario = await this.prisma.usuario.findFirst({
       where: { username: body.username, password: body.password },
-      include: { propiedades: true }
+      // El login se guarda en localStorage; con las fotos completas se pasa del límite del navegador
+      include: { propiedades: PROPIEDADES_RESUMIDAS }
     });
 
     if (!usuario) throw new HttpException('Credenciales incorrectas', HttpStatus.UNAUTHORIZED);
@@ -68,7 +80,7 @@ export class UsuariosController {
       // Al cerrar sesión mandamos activo: false para que salga Offline de una vez
       const sigueConectado = body?.activo !== false;
 
-      await prisma.usuario.update({
+      await this.prisma.usuario.update({
         where: { id },
         data: { ultima_actividad: sigueConectado ? new Date() : null },
       });
@@ -101,10 +113,10 @@ export class UsuariosController {
         dataToUpdate.propiedades = { set: [] };
       }
 
-      const usuarioActualizado = await prisma.usuario.update({
+      const usuarioActualizado = await this.prisma.usuario.update({
         where: { id: id },
         data: dataToUpdate,
-        include: { propiedades: true }
+        include: { propiedades: PROPIEDADES_RESUMIDAS }
       });
 
       return { mensaje: 'Usuario actualizado', usuario: usuarioActualizado };
@@ -117,7 +129,7 @@ export class UsuariosController {
   @Delete(':id')
   async eliminarUsuario(@Param('id') id: string) {
     try {
-      await prisma.usuario.delete({ where: { id: id } });
+      await this.prisma.usuario.delete({ where: { id: id } });
       return { mensaje: 'Usuario eliminado correctamente' };
     } catch (error) {
       throw new HttpException('Error al eliminar el usuario', HttpStatus.INTERNAL_SERVER_ERROR);

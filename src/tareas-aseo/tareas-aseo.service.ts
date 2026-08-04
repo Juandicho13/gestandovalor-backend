@@ -29,7 +29,8 @@ const DATOS_RELACIONADOS = {
       direccion: true,
       ciudad: true,
       tipo_propiedad: true,
-      fotos: true,
+      // Sin 'fotos': el panel refresca cada 30s y ese array puede traer imágenes
+      // en base64 de propiedades viejas. La foto sale de /propiedades.
     },
   },
   empleado: {
