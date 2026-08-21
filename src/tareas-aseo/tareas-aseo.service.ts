@@ -26,9 +26,12 @@ export class TareasAseoService {
   }
 
   async findAll() {
-    // Traemos la tabla cruda sin cruzar datos para que nunca se estrelle
     return await this.prisma.tareasAseo.findMany({
-      orderBy: { created_at: 'desc' }
+      orderBy: { created_at: 'desc' },
+      include: {
+        propiedad: { select: { id: true, titulo: true, ciudad: true } },
+        empleado: { select: { id: true, nombre: true } },
+      },
     });
   }
 

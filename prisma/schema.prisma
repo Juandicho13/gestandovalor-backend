@@ -112,6 +112,18 @@ model Propiedad {
   tarifas_especiales  TarifaEspecial[] 
 
   created_at          DateTime @default(now())
+
+  // ==========================================
+  // 🔗 CONEXIÓN CON PRICELABS
+  // ==========================================
+  pricelabs_listing_id String?      // ID del listing en PriceLabs
+  pricelabs_pms        String?      // 'airbnb', 'hostaway', 'lodgify', 'pms'...
+  pricelabs_activo     Boolean      @default(false)
+  pricelabs_moneda     String?      // moneda que reporta PriceLabs (debe ser COP)
+  pricelabs_ajuste_pct Float?       @default(0)  // margen venta directa: -10 = 10% menos
+  pricelabs_sync_at    DateTime?    // última sincronización exitosa
+
+  precios_pricelabs    PrecioPricelabs[]
 }
 
 model Reserva {
@@ -146,6 +158,27 @@ model TarifaEspecial {
   precio        Float
   
   created_at    DateTime  @default(now())
+}
+
+/// Caché diario de precios recomendados por PriceLabs.
+/// La web SIEMPRE lee de aquí, nunca de PriceLabs en vivo.
+model PrecioPricelabs {
+  id              String    @id @default(uuid())
+  propiedad_id    String
+  propiedad       Propiedad @relation(fields: [propiedad_id], references: [id], onDelete: Cascade)
+
+  fecha           DateTime  @db.Date
+  precio          Float     // precio final ya con el ajuste_pct aplicado
+  precio_original Float     // precio crudo de PriceLabs, para auditar
+  min_estadia     Int?
+  moneda          String?
+  demanda         String?   // "Low Demand", "High Demand"...
+  reservado       Boolean   @default(false)
+
+  actualizado     DateTime  @updatedAt
+
+  @@unique([propiedad_id, fecha])
+  @@index([propiedad_id, fecha])
 }
 
 model TareasAseo {
