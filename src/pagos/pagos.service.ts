@@ -8,39 +8,39 @@ export class PagosService {
 
     async crearEnlaceDePago(reservaId: string, monto: number, descripcion: string) {
         try {
-            // Usamos la llave secreta de pruebas que pusiste en el .env
             const apiKey = process.env.BOLD_SECRET_KEY_TEST;
 
-            // Petición a la API de Bold para generar el link
             const response = await axios.post(
-                'https://integrations.api.bold.co/online/v1/payment-links',
+                'https://integrations.api.bold.co/online/link/v1', // <-- 1. URL oficial corregida
                 {
+                    amount_type: 'CLOSE', // <-- 2. Obligatorio: indica que el monto es exacto
                     amount: {
                         currency: 'COP',
                         total_amount: monto
                     },
-                    reference: `GV-RES-${reservaId}-${Date.now()}`, // Referencia única
+                    reference: `BP-RES-${reservaId}-${Date.now()}`,
                     description: descripcion,
                 },
                 {
                     headers: {
-                        'Authorization': `Api-Key ${apiKey}`,
+                        'Authorization': `x-api-key ${apiKey}`, // <-- 3. Formato exacto que pide la seguridad de Bold
                         'Content-Type': 'application/json',
                     }
                 }
             );
 
-            const data = response.data;
+            // 4. Bold devuelve la información envuelta en un "payload"
+            const dataBold = response.data.payload;
 
-            // Guardamos el intento de pago en la base de datos
+            // Guardamos en tu base de datos de Prisma
             const pago = await this.prisma.pago.create({
                 data: {
-                    reservaId,
-                    monto,
+                    reservaId: reservaId,
+                    monto: monto,
                     estado: 'PENDIENTE',
-                    boldLinkId: data.id,
-                    urlPasarela: data.url || data.pay_link, // La URL que nos devuelve Bold
-                },
+                    boldLinkId: dataBold.payment_link, // Extraemos el ID del link real
+                    urlPasarela: dataBold.url          // Extraemos la URL para redirigir
+                }
             });
 
             return {
