@@ -14,9 +14,10 @@ async function bootstrap() {
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ extended: true, limit: '50mb' }));
 
+  // En tu main.ts, cambia las validaciones globales a esto:
   app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
+    whitelist: false,             // <-- Cambiado a false
+    forbidNonWhitelisted: false,  // <-- Cambiado a false
     transform: true,
   }));
 
