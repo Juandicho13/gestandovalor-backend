@@ -6,7 +6,7 @@ import axios from 'axios';
 export class PagosService {
     constructor(private prisma: PrismaService) { }
 
-    async createEnlaceDePago(reservaId: string, monto: number, descripcion: string) {
+    async crearEnlaceDePago(reservaId: string, monto: number, descripcion: string) {
         try {
             const apiKey = process.env.BOLD_SECRET_KEY_TEST;
 
