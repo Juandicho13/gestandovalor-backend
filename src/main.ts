@@ -23,5 +23,3 @@ async function bootstrap() {
   await app.listen(3000); // (O el puerto que tengas configurado)
 }
 bootstrap();
-
-//come popo render
