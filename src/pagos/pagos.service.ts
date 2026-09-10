@@ -12,8 +12,9 @@ export class PagosService {
             const apiKey = process.env.BOLD_SECRET_KEY_TEST?.trim() || '';
 
             // 2. Petición a Bold con el formato exacto
+            // 2. Petición a Bold con el formato exacto (PRODUCCIÓN)
             const response = await axios.post(
-                'https://integrations.api.bold.co/online/link/v1',
+                'https://payments.api.bold.co/online/link/v1', // <-- ¡Cambiamos a la URL real!
                 {
                     amount_type: 'CLOSE',
                     amount: {
