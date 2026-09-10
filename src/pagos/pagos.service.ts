@@ -6,14 +6,14 @@ import axios from 'axios';
 export class PagosService {
     constructor(private prisma: PrismaService) { }
 
-    async crearEnlaceDePago(reservaId: string, monto: number, descripcion: string) {
+    async createEnlaceDePago(reservaId: string, monto: number, descripcion: string) {
         try {
             const apiKey = process.env.BOLD_SECRET_KEY_TEST;
 
             const response = await axios.post(
-                'https://integrations.api.bold.co/online/link/v1', // <-- 1. URL oficial corregida
+                'https://integrations.api.bold.co/online/link/v1',
                 {
-                    amount_type: 'CLOSE', // <-- 2. Obligatorio: indica que el monto es exacto
+                    amount_type: 'CLOSE',
                     amount: {
                         currency: 'COP',
                         total_amount: monto
@@ -23,14 +23,14 @@ export class PagosService {
                 },
                 {
                     headers: {
-                        'Authorization': `x-api-key ${apiKey}`, // <-- 3. Formato exacto que pide la seguridad de Bold
+                        'Authorization': `Api-Key ${apiKey}`,
                         'Content-Type': 'application/json',
                     }
                 }
             );
 
-            // 4. Bold devuelve la información envuelta en un "payload"
-            const dataBold = response.data.payload;
+            // Bold envuelve la respuesta en "payload"
+            const dataBold = response.data.payload || response.data;
 
             // Guardamos en tu base de datos de Prisma
             const pago = await this.prisma.pago.create({
@@ -38,8 +38,8 @@ export class PagosService {
                     reservaId: reservaId,
                     monto: monto,
                     estado: 'PENDIENTE',
-                    boldLinkId: dataBold.payment_link, // Extraemos el ID del link real
-                    urlPasarela: dataBold.url          // Extraemos la URL para redirigir
+                    boldLinkId: dataBold.payment_link || dataBold.id,
+                    urlPasarela: dataBold.url || dataBold.pay_link,
                 }
             });
 
@@ -50,7 +50,7 @@ export class PagosService {
             };
 
         } catch (error) {
-            console.error('Error con Bold:', error.response?.data || error.message);
+            console.error('🔥 Error con Bold:', error.response?.data || error.message);
             throw new InternalServerErrorException('Error al generar el enlace de pago.');
         }
     }
