@@ -24,9 +24,9 @@ export class PagosService {
                 },
                 {
                     headers: {
-                        'Authorization': `x-api-key ${apiKey}`,
+                        'Authorization': `Api-Key ${apiKey}`,
                         'Content-Type': 'application/json',
-                    },
+                    }
                 }
             );
 
