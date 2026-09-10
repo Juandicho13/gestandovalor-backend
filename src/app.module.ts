@@ -14,6 +14,7 @@ import { DisponibilidadModule } from './disponibilidad/disponibilidad.module';
 
 // ✨ AQUÍ IMPORTAMOS EL NUEVO MÓDULO DE TARIFAS
 import { TarifasModule } from './tarifas/tarifas.module';
+import { PagosModule } from './pagos/pagos.module';
 
 @Module({
   imports: [
@@ -24,7 +25,8 @@ import { TarifasModule } from './tarifas/tarifas.module';
     LiquidacionesModule,
     BlogModule,
     DisponibilidadModule,
-    TarifasModule // ✨ Y AQUÍ LO MATRICULAMOS PARA QUE EL SERVIDOR LO ESCUCHE
+    TarifasModule,
+    PagosModule // ✨ Y AQUÍ LO MATRICULAMOS PARA QUE EL SERVIDOR LO ESCUCHE
   ],
   controllers: [
     AppController,
