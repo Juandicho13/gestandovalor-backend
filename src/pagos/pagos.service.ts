@@ -50,8 +50,15 @@ export class PagosService {
             };
 
         } catch (error) {
+            const status = error.response?.status;
+            const headers = error.response?.headers;
             const errorRealDeBold = error.response?.data || error.message;
-            console.error('Error detallado con Bold:', errorRealDeBold);
+
+            console.error('❌ Error al llamar a Bold');
+            console.error('URL llamada:', error.config?.url);
+            console.error('Status HTTP:', status);
+            console.error('Headers de la respuesta:', JSON.stringify(headers));
+            console.error('Cuerpo de la respuesta:', errorRealDeBold);
 
             throw new InternalServerErrorException({
                 alerta: 'Rechazo directo de Bold',
