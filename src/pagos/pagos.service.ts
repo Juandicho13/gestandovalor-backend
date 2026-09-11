@@ -10,9 +10,8 @@ export class PagosService {
         try {
             const apiKey = process.env.BOLD_SECRET_KEY_TEST?.trim() || '';
 
-            // 1. Petición a la URL oficial y correcta de Bold v2
             const response = await axios.post(
-                'https://payments.api.bold.co/v2/payment-links', // <-- LA RUTA CORRECTA
+                'https://payments.api.bold.co/v2/payment-links', // URL Oficial de Producción
                 {
                     amount: {
                         currency: 'COP',
@@ -20,19 +19,19 @@ export class PagosService {
                     },
                     reference: `BP-RES-${reservaId}-${Date.now()}`,
                     description: descripcion.substring(0, 95),
+                    // 👇 AQUÍ LE DECIMOS A BOLD A DÓNDE REGRESAR AL CLIENTE
+                    redirection_url: 'https://gestandovalor.com' // Luego puedes cambiar esto a tu página de "reserva exitosa"
                 },
                 {
                     headers: {
-                        'Authorization': `Api-Key ${apiKey}`, // <-- FORMATO CORRECTO
+                        'Authorization': `Api-Key ${apiKey}`,
                         'Content-Type': 'application/json',
                     }
                 }
             );
 
-            // 2. Extraemos la info (Bold devuelve payment_link directo en la data)
             const dataBold = response.data;
 
-            // 3. Guardamos en tu base de datos de Prisma
             const pago = await this.prisma.pago.create({
                 data: {
                     reservaId: reservaId,
@@ -50,7 +49,6 @@ export class PagosService {
             };
 
         } catch (error) {
-            // Si Bold se queja, nos dirá por qué exactamente
             const errorRealDeBold = error.response?.data || error.message;
             console.error('Error detallado con Bold:', errorRealDeBold);
 
