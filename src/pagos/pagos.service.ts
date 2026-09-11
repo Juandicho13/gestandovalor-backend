@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import axios from 'axios';
+import * as crypto from 'crypto'; // <-- Importamos la librería de encriptación
 
 @Injectable()
 export class PagosService {
@@ -8,61 +8,42 @@ export class PagosService {
 
     async crearEnlaceDePago(reservaId: string, monto: number, descripcion: string) {
         try {
-            const apiKey = process.env.BOLD_PUBLIC_KEY_TEST?.trim() || '';
+            // 1. Para el Widget necesitamos una "Llave de Integridad" (ya te explico dónde sacarla)
+            const llaveIntegridad = process.env.BOLD_INTEGRITY_KEY_TEST?.trim() || 'PON_TU_LLAVE_DE_INTEGRIDAD_AQUI';
 
-            const response = await axios.post(
-                'https://integrations.api.bold.co/online/link/v1', // URL Oficial - API Link de pagos (Bold)
-                {
-                    amount_type: 'CLOSE', // Obligatorio: CLOSE = tú defines el monto
-                    amount: {
-                        currency: 'COP',
-                        total_amount: Number(monto)
-                    },
-                    reference: `BP-RES-${reservaId}-${Date.now()}`,
-                    description: descripcion.substring(0, 95),
-                    // 👇 AQUÍ LE DECIMOS A BOLD A DÓNDE REGRESAR AL CLIENTE
-                    callback_url: 'https://gestandovalor.com' // Luego puedes cambiar esto a tu página de "reserva exitosa"
-                },
-                {
-                    headers: {
-                        'Authorization': `x-api-key ${apiKey}`,
-                        'Content-Type': 'application/json',
-                    }
-                }
-            );
+            const referencia = `BP-RES-${reservaId}-${Date.now()}`;
+            const moneda = 'COP';
+            const montoFijo = Number(monto);
 
-            const dataBold = response.data?.payload || {};
+            // 2. Bold exige que firmemos los datos para que nadie los pueda alterar
+            const stringToHash = `${referencia}${montoFijo}${moneda}${llaveIntegridad}`;
+            const hashCriptografico = crypto.createHash('sha256').update(stringToHash).digest('hex');
 
+            // 3. Guardamos la reserva como PENDIENTE en tu base de datos
             const pago = await this.prisma.pago.create({
                 data: {
                     reservaId: reservaId,
-                    monto: Number(monto),
+                    monto: montoFijo,
                     estado: 'PENDIENTE',
-                    boldLinkId: dataBold.payment_link || 'ID_GENERADO',
-                    urlPasarela: dataBold.url || '',
+                    boldLinkId: referencia, // Usamos la referencia como ID
+                    urlPasarela: 'WIDGET',
                 }
             });
 
+            // 4. Devolvemos los datos para que el Frontend abra el Widget
             return {
                 success: true,
                 pagoId: pago.id,
-                linkPago: pago.urlPasarela
+                referencia: referencia,
+                hash: hashCriptografico,
+                monto: montoFijo
             };
 
         } catch (error) {
-            const status = error.response?.status;
-            const headers = error.response?.headers;
-            const errorRealDeBold = error.response?.data || error.message;
-
-            console.error('❌ Error al llamar a Bold');
-            console.error('URL llamada:', error.config?.url);
-            console.error('Status HTTP:', status);
-            console.error('Headers de la respuesta:', JSON.stringify(headers));
-            console.error('Cuerpo de la respuesta:', errorRealDeBold);
-
+            console.error('Error generando firma para Bold:', error);
             throw new InternalServerErrorException({
-                alerta: 'Rechazo directo de Bold',
-                detalles_bold: errorRealDeBold
+                alerta: 'Error al encriptar los datos',
+                detalles_bold: error.message
             });
         }
     }
