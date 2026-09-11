@@ -9,7 +9,7 @@ export class PagosService {
     async crearEnlaceDePago(reservaId: string, monto: number, descripcion: string) {
         try {
             // 1. Para el Widget necesitamos una "Llave de Integridad" (ya te explico dónde sacarla)
-            const llaveIntegridad = process.env.BOLD_INTEGRITY_KEY_TEST?.trim() || 'PON_TU_LLAVE_DE_INTEGRIDAD_AQUI';
+            const llaveIntegridad = process.env.BOLD_INTEGRITY_KEY_TEST?.trim() || 'kUG4jbG1kR8_guZLGpW09Q';
 
             const referencia = `BP-RES-${reservaId}-${Date.now()}`;
             const moneda = 'COP';
