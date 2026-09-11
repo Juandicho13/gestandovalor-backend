@@ -8,7 +8,7 @@ export class PagosService {
 
     async crearEnlaceDePago(reservaId: string, monto: number, descripcion: string) {
         try {
-            const apiKey = process.env.BOLD_SECRET_KEY_TEST?.trim() || '';
+            const apiKey = process.env.BOLD_PUBLIC_KEY_TEST?.trim() || '';
 
             const response = await axios.post(
                 'https://integrations.api.bold.co/online/link/v1', // URL Oficial - API Link de pagos (Bold)
