@@ -8,43 +8,38 @@ export class PagosService {
 
     async crearEnlaceDePago(reservaId: string, monto: number, descripcion: string) {
         try {
-            // 1. Limpiamos la llave por si se pegó con un espacio invisible en Render
             const apiKey = process.env.BOLD_SECRET_KEY_TEST?.trim() || '';
 
-            // 2. Petición a Bold con el formato exacto
-            // 2. Petición a Bold con el formato exacto (PRODUCCIÓN)
+            // 1. Petición a la URL oficial y correcta de Bold v2
             const response = await axios.post(
-                'https://payments.api.bold.co/online/link/v1', // <-- ¡Cambiamos a la URL real!
+                'https://payments.api.bold.co/v2/payment-links', // <-- LA RUTA CORRECTA
                 {
-                    amount_type: 'CLOSE',
                     amount: {
                         currency: 'COP',
-                        total_amount: Number(monto) // Aseguramos que sea un número estricto
+                        total_amount: Number(monto)
                     },
                     reference: `BP-RES-${reservaId}-${Date.now()}`,
-                    description: descripcion.substring(0, 95), // Bold exige máximo 100 caracteres
+                    description: descripcion.substring(0, 95),
                 },
                 {
                     headers: {
-                        // Mandamos ambos por si Bold se pone exquisito con sus políticas
-                        'Authorization': `x-api-key ${apiKey}`,
-                        'x-api-key': apiKey,
+                        'Authorization': `Api-Key ${apiKey}`, // <-- FORMATO CORRECTO
                         'Content-Type': 'application/json',
                     }
                 }
             );
 
-            // 3. Extraemos la data
-            const dataBold = response.data?.payload || response.data;
+            // 2. Extraemos la info (Bold devuelve payment_link directo en la data)
+            const dataBold = response.data;
 
-            // 4. Guardamos en tu base de datos
+            // 3. Guardamos en tu base de datos de Prisma
             const pago = await this.prisma.pago.create({
                 data: {
                     reservaId: reservaId,
                     monto: Number(monto),
                     estado: 'PENDIENTE',
-                    boldLinkId: dataBold.payment_link || dataBold.id || 'ID_GENERADO',
-                    urlPasarela: dataBold.url || dataBold.pay_link || '',
+                    boldLinkId: dataBold.id || 'ID_GENERADO',
+                    urlPasarela: dataBold.payment_link || dataBold.url || '',
                 }
             });
 
@@ -55,11 +50,10 @@ export class PagosService {
             };
 
         } catch (error) {
-            // 🔥 LA MAGIA ESTÁ AQUÍ: Capturamos la verdadera respuesta de Bold
+            // Si Bold se queja, nos dirá por qué exactamente
             const errorRealDeBold = error.response?.data || error.message;
             console.error('Error detallado con Bold:', errorRealDeBold);
 
-            // En vez de un error genérico, te lo disparamos a tu pantalla para verlo
             throw new InternalServerErrorException({
                 alerta: 'Rechazo directo de Bold',
                 detalles_bold: errorRealDeBold
