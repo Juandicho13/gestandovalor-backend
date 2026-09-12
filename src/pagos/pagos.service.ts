@@ -9,7 +9,7 @@ export class PagosService {
     async crearEnlaceDePago(reservaId: string, monto: number, descripcion: string) {
         try {
             // 1. Usamos tu LLAVE SECRETA (La que vimos en tu captura de pantalla)
-            const llaveSecreta = process.env.BOLD_SECRET_KEY_TEST?.trim() || 'kUG4jbG1kR8_guZLGpW09Q';
+            const llaveSecreta = process.env.BOLD_SECRET_KEY_TEST?.trim() || 'ei90AXR1UrlH1-wyy60zPw';
 
             const referencia = `BP-RES-${reservaId}-${Date.now()}`;
             const moneda = 'COP';
