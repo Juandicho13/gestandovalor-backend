@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import * as crypto from 'crypto'; // <-- Importamos la librería de encriptación
+import * as crypto from 'crypto';
 
 @Injectable()
 export class PagosService {
@@ -8,29 +8,29 @@ export class PagosService {
 
     async crearEnlaceDePago(reservaId: string, monto: number, descripcion: string) {
         try {
-            // 1. Para el Widget necesitamos una "Llave de Integridad" (ya te explico dónde sacarla)
-            const llaveIntegridad = process.env.BOLD_INTEGRITY_KEY_TEST?.trim() || 'kUG4jbG1kR8_guZLGpW09Q';
+            // 1. Usamos tu LLAVE SECRETA (La que vimos en tu captura de pantalla)
+            const llaveSecreta = process.env.BOLD_SECRET_KEY_TEST?.trim() || 'kUG4jbG1kR8_guZLGpW09Q';
 
             const referencia = `BP-RES-${reservaId}-${Date.now()}`;
             const moneda = 'COP';
-            const montoFijo = Number(monto);
+            const montoFijo = Math.round(Number(monto)); // Sin decimales para que no falle
 
-            // 2. Bold exige que firmemos los datos para que nadie los pueda alterar
-            const stringToHash = `${referencia}${montoFijo}${moneda}${llaveIntegridad}`;
-            const hashCriptografico = crypto.createHash('sha256').update(stringToHash).digest('hex');
+            // 2. Bold exige este orden estricto: {Referencia}{Monto}{Moneda}{LlaveSecreta}
+            const stringToHash = `${referencia}${montoFijo}${moneda}${llaveSecreta}`;
 
-            // 3. Guardamos la reserva como PENDIENTE en tu base de datos
+            // 3. Generamos el hash criptográfico
+            const hashCriptografico = crypto.createHash('sha256').update(stringToHash, 'utf-8').digest('hex');
+
             const pago = await this.prisma.pago.create({
                 data: {
                     reservaId: reservaId,
                     monto: montoFijo,
                     estado: 'PENDIENTE',
-                    boldLinkId: referencia, // Usamos la referencia como ID
+                    boldLinkId: referencia,
                     urlPasarela: 'WIDGET',
                 }
             });
 
-            // 4. Devolvemos los datos para que el Frontend abra el Widget
             return {
                 success: true,
                 pagoId: pago.id,
@@ -42,7 +42,7 @@ export class PagosService {
         } catch (error) {
             console.error('Error generando firma para Bold:', error);
             throw new InternalServerErrorException({
-                alerta: 'Error al encriptar los datos',
+                alerta: 'Error al encriptar',
                 detalles_bold: error.message
             });
         }
