@@ -9,7 +9,8 @@ export class PagosService {
     async crearEnlaceDePago(reservaId: string, monto: number, descripcion: string) {
         try {
             // 1. LLAVE HARDCODEADA TEMPORALMENTE: Para descartar fallos de caché en Render
-            const llaveSecreta = 'ei90AXR1UrlH1-wyy60zPw';
+            // En pagos.service.ts, asegúrate de que esté leyendo la variable de entorno:
+            const llaveSecreta = process.env.BOLD_SECRET_KEY;
 
             // 2. REFERENCIA CORTA: Evita que Bold la trunque y rompa la firma de integridad
             const referencia = `BP-${Date.now()}`;
