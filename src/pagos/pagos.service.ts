@@ -10,9 +10,9 @@ export class PagosService {
         try {
             // 1. LLAVE HARDCODEADA TEMPORALMENTE: Para descartar fallos de caché en Render
             // En pagos.service.ts, asegúrate de que esté leyendo la variable de entorno:
-            const llaveSecreta = process.env.BOLD_SECRET_KEY;
+            // 👇 Llave Secreta de PRODUCCIÓN quemada directo aquí
+            const llaveSecreta = 'ei90AXR1UrlH1-wyy60zPw';
 
-            // 2. REFERENCIA CORTA: Evita que Bold la trunque y rompa la firma de integridad
             const referencia = `BP-${Date.now()}`;
             const moneda = 'COP';
             const montoFijo = Math.round(Number(monto));
