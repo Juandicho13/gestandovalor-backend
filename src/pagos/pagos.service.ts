@@ -9,7 +9,7 @@ export class PagosService {
     async crearEnlaceDePago(reservaId: string, monto: number, descripcion: string) {
         try {
             // 1. LLAVE HARDCODEADA TEMPORALMENTE: Para descartar fallos de caché en Render
-            const llaveSecreta = 'kUG4jbG1kR8_guZLGpW09Q';
+            const llaveSecreta = 'ei90AXR1UrlH1-wyy60zPw';
 
             // 2. REFERENCIA CORTA: Evita que Bold la trunque y rompa la firma de integridad
             const referencia = `BP-${Date.now()}`;
