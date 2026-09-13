@@ -8,17 +8,16 @@ export class PagosService {
 
     async crearEnlaceDePago(reservaId: string, monto: number, descripcion: string) {
         try {
-            // 1. Usamos tu LLAVE SECRETA (La que vimos en tu captura de pantalla)
-            const llaveSecreta = process.env.BOLD_SECRET_KEY_TEST?.trim() || 'ei90AXR1UrlH1-wyy60zPw';
+            // 1. LLAVE HARDCODEADA TEMPORALMENTE: Para descartar fallos de caché en Render
+            const llaveSecreta = 'kUG4jbG1kR8_guZLGpW09Q';
 
-            const referencia = `BP-RES-${reservaId}-${Date.now()}`;
+            // 2. REFERENCIA CORTA: Evita que Bold la trunque y rompa la firma de integridad
+            const referencia = `BP-${Date.now()}`;
             const moneda = 'COP';
-            const montoFijo = Math.round(Number(monto)); // Sin decimales para que no falle
+            const montoFijo = Math.round(Number(monto));
 
-            // 2. Bold exige este orden estricto: {Referencia}{Monto}{Moneda}{LlaveSecreta}
+            // 3. Generamos el hash estricto
             const stringToHash = `${referencia}${montoFijo}${moneda}${llaveSecreta}`;
-
-            // 3. Generamos el hash criptográfico
             const hashCriptografico = crypto.createHash('sha256').update(stringToHash, 'utf-8').digest('hex');
 
             const pago = await this.prisma.pago.create({
