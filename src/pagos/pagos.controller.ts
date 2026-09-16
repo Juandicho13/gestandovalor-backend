@@ -6,8 +6,7 @@ export class PagosController {
     constructor(private readonly pagosService: PagosService) { }
 
     @Post('generar-link')
-    async generarLink(@Body() body: { reservaId: string; monto: number; descripcion: string }) {
-        const { reservaId, monto, descripcion } = body;
-        return this.pagosService.crearEnlaceDePago(reservaId, monto, descripcion);
+    async generarLink(@Body() body: { reservaId: string }) {
+        return this.pagosService.crearEnlaceDePago(body.reservaId);
     }
 }
