@@ -208,12 +208,18 @@ export class PagosService {
     }
 
     private respuesta(estado: EstadoVerificacion, pago: any) {
+        const reserva = pago.reserva;
         return {
             estado,
             referencia: pago.boldLinkId,
-            alojamiento: pago.reserva?.propiedad?.titulo || '',
-            check_in: pago.reserva ? fechaColombia(pago.reserva.check_in) : '',
-            check_out: pago.reserva ? fechaColombia(pago.reserva.check_out) : '',
+            propiedad_id: reserva?.propiedad_id || '',
+            alojamiento: reserva?.propiedad?.titulo || '',
+            check_in: reserva ? fechaColombia(reserva.check_in) : '',
+            check_out: reserva ? fechaColombia(reserva.check_out) : '',
+            adultos: reserva?.adultos ?? 0,
+            ninos: reserva?.ninos ?? 0,
+            bebes: reserva?.bebes ?? 0,
+            mascotas: reserva?.mascotas ?? 0,
             monto: pago.monto,
         };
     }
