@@ -58,9 +58,16 @@ export class PropiedadesController {
     res.end(buffer);
   }
 
+  // Página pública de la suite: nunca enviamos claves de Wi-Fi, cerradura ni inventario
   @Get(':id/detalle')
-  obtenerDetalleSuite(@Param('id') id: string) {
-    return this.propiedadesService.obtenerDetalleSuite(id);
+  async obtenerDetalleSuite(@Param('id') id: string) {
+    const propiedad: Record<string, unknown> = {
+      ...(await this.propiedadesService.obtenerDetalleSuite(id)),
+    };
+    for (const campo of ['wifi_red', 'wifi_pass', 'cerradura_codigo', 'inventario', 'propietario_id']) {
+      delete propiedad[campo];
+    }
+    return propiedad;
   }
 
   @Get(':id')

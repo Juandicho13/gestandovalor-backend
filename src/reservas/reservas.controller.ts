@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { ReservasService } from './reservas.service';
 
 @Controller('reservas')
@@ -14,6 +14,17 @@ export class ReservasController {
   @Post('troya/aseos')
   crearAseo(@Body() data: any) {
     return this.reservasService.crearAseo(data);
+  }
+
+  // --- RUTAS PÚBLICAS DE DISPONIBILIDAD (sin datos de huéspedes) ---
+  @Get('ocupacion/:id')
+  ocupacion(@Param('id') id: string) {
+    return this.reservasService.ocupacionPublica(id);
+  }
+
+  @Get('ocupadas')
+  ocupadas(@Query('in') llegada: string, @Query('out') salida: string) {
+    return this.reservasService.propiedadesOcupadas(llegada, salida);
   }
 
   // --- LO ORIGINAL DE RESERVAS (VA ABAJO) ---

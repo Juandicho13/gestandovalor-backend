@@ -1,5 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import {
+  ESTADO_CANCELADA,
+  ESTADO_PAGO_EN_PROCESO,
+  buscarReservasQueSeCruzan,
+  esFechaValida,
+  liberarReservasVencidas,
+} from './fechas-reserva';
+
+const N8N_WEBHOOK_URL =
+  process.env.N8N_WEBHOOK_URL ||
+  'https://juanchisolarte.app.n8n.cloud/webhook-test/2cd97a71-18f1-4a6f-b09e-d9ebf2e12a2b';
 
 @Injectable()
 export class ReservasService {
@@ -12,7 +23,7 @@ export class ReservasService {
 
     // 2. Le avisamos a n8n (WhatsApp) en segundo plano
     try {
-      fetch('https://juanchisolarte.app.n8n.cloud/webhook-test/2cd97a71-18f1-4a6f-b09e-d9ebf2e12a2b', {
+      fetch(N8N_WEBHOOK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -37,14 +48,41 @@ export class ReservasService {
     return nuevaReserva;
   }
 
+  // Panel: no mostramos canceladas ni pagos que aún no se completan
   async findAll() {
+    await liberarReservasVencidas(this.prisma);
     return this.prisma.reserva.findMany({
+      where: { estado_reserva: { notIn: [ESTADO_CANCELADA, ESTADO_PAGO_EN_PROCESO] } },
       orderBy: { check_out: 'asc' }
     });
   }
 
   async findByPropiedad(propiedad_id: string) {
-    return this.prisma.reserva.findMany({ where: { propiedad_id } });
+    await liberarReservasVencidas(this.prisma);
+    return this.prisma.reserva.findMany({
+      where: {
+        propiedad_id,
+        estado_reserva: { notIn: [ESTADO_CANCELADA, ESTADO_PAGO_EN_PROCESO] },
+      },
+    });
+  }
+
+  // Público (página de la suite): solo fechas ocupadas, sin datos del huésped
+  async ocupacionPublica(propiedad_id: string) {
+    await liberarReservasVencidas(this.prisma);
+    return this.prisma.reserva.findMany({
+      where: { propiedad_id, estado_reserva: { not: ESTADO_CANCELADA } },
+      select: { check_in: true, check_out: true },
+    });
+  }
+
+  // Público (resultados de búsqueda): ids de propiedades ocupadas en esas fechas
+  async propiedadesOcupadas(llegada: string, salida: string) {
+    if (!esFechaValida(llegada) || !esFechaValida(salida) || salida <= llegada) {
+      throw new BadRequestException('Fechas inválidas');
+    }
+    const cruces = await buscarReservasQueSeCruzan(this.prisma, llegada, salida);
+    return { propiedades: [...new Set(cruces.map((r) => r.propiedad_id))] };
   }
 
   async update(id: string, data: any) {
