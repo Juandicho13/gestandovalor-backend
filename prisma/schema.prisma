@@ -132,6 +132,8 @@ model Reserva {
   propiedad    Propiedad @relation(fields: [propiedad_id], references: [id], onDelete: Cascade)
 
   huesped_nombre     String
+  huesped_telefono   String?
+  huesped_email      String?
   check_in           DateTime
   check_out          DateTime
   canal              String
