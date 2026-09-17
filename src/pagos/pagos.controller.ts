@@ -14,8 +14,8 @@ export class PagosController {
     // La página de confirmación consulta el estado real del pago
     @Post('verificar')
     @HttpCode(200)
-    async verificar(@Body() body: { referencia: string }) {
-        return this.pagosService.verificarPago(body?.referencia);
+    async verificar(@Body() body: { referencia: string; estado_bold?: string }) {
+        return this.pagosService.verificarPago(body?.referencia, body?.estado_bold);
     }
 
     // Bold notifica aquí cuando un pago se aprueba o rechaza (producción)

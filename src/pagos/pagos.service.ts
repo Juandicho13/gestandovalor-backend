@@ -14,11 +14,14 @@ import {
     buscarReservasQueSeCruzan,
     esFechaValida,
     fechaColombia,
+    seCruzan,
 } from '../reservas/fechas-reserva';
 
 const N8N_WEBHOOK_URL =
     process.env.N8N_WEBHOOK_URL ||
     'https://juanchisolarte.app.n8n.cloud/webhook-test/2cd97a71-18f1-4a6f-b09e-d9ebf2e12a2b';
+
+const API_PUBLICA = process.env.PUBLIC_API_URL || 'https://gestandovalor-backend.onrender.com';
 
 type EstadoVerificacion = 'aprobado' | 'pendiente' | 'rechazado';
 
@@ -77,6 +80,10 @@ export class PagosService {
         if (propiedad.capacidad_huespedes && adultos + ninos > propiedad.capacidad_huespedes) {
             throw new BadRequestException('Superas la capacidad máxima del alojamiento');
         }
+
+        // Si el mismo huésped vuelve a intentar pagar (por ejemplo, después de un rechazo),
+        // liberamos su intento anterior para que no choque consigo mismo.
+        await this.liberarIntentosAnteriores(propiedad.id, llegada, salida, email, telefono);
 
         const cruces = await buscarReservasQueSeCruzan(this.prisma, llegada, salida, propiedad.id);
         if (cruces.length > 0) {
@@ -140,7 +147,7 @@ export class PagosService {
     // ============================================================
     // 2. La página de confirmación pregunta cómo quedó el pago
     // ============================================================
-    async verificarPago(referencia: string) {
+    async verificarPago(referencia: string, estadoNavegador?: string) {
         if (!referencia || typeof referencia !== 'string') {
             throw new BadRequestException('Falta la referencia del pago');
         }
@@ -161,6 +168,18 @@ export class PagosService {
         }
         if (estadoBold === 'REJECTED' || estadoBold === 'FAILED' || estadoBold === 'VOIDED') {
             await this.rechazarPago(pago.id);
+            return this.respuesta('rechazado', pago);
+        }
+
+        // Bold todavía no reporta el resultado, pero el huésped volvió con un rechazo:
+        // liberamos las fechas para que pueda intentarlo de nuevo. El pago queda
+        // pendiente de confirmar, así que si Bold lo aprobara después, se confirma igual.
+        const pista = String(estadoNavegador || '').toLowerCase();
+        if (pista === 'rejected' || pista === 'failed') {
+            await this.prisma.reserva.updateMany({
+                where: { id: pago.reservaId, estado_reserva: ESTADO_PAGO_EN_PROCESO },
+                data: { estado_reserva: ESTADO_CANCELADA },
+            });
             return this.respuesta('rechazado', pago);
         }
 
@@ -200,20 +219,62 @@ export class PagosService {
     // ------------------------------------------------------------
     // Utilidades internas
     // ------------------------------------------------------------
+    private async liberarIntentosAnteriores(
+        propiedadId: string,
+        llegada: string,
+        salida: string,
+        email: string,
+        telefono: string,
+    ) {
+        const anteriores = await this.prisma.reserva.findMany({
+            where: {
+                propiedad_id: propiedadId,
+                estado_reserva: ESTADO_PAGO_EN_PROCESO,
+                OR: [{ huesped_email: email }, { huesped_telefono: telefono }],
+            },
+            select: { id: true, check_in: true, check_out: true },
+        });
+
+        const ids = anteriores
+            .filter((r) => seCruzan(fechaColombia(r.check_in), fechaColombia(r.check_out), llegada, salida))
+            .map((r) => r.id);
+
+        if (ids.length === 0) return;
+
+        await this.prisma.reserva.updateMany({
+            where: { id: { in: ids } },
+            data: { estado_reserva: ESTADO_CANCELADA },
+        });
+    }
+
     private buscarPago(referencia: string) {
         return this.prisma.pago.findFirst({
             where: { boldLinkId: referencia },
-            include: { reserva: { include: { propiedad: { select: { titulo: true } } } } },
+            include: {
+                reserva: {
+                    include: {
+                        propiedad: { select: { titulo: true, ciudad: true, departamento: true, fotos: true } },
+                    },
+                },
+            },
         });
     }
 
     private respuesta(estado: EstadoVerificacion, pago: any) {
         const reserva = pago.reserva;
+        const propiedad = reserva?.propiedad;
+        const primeraFoto: string = propiedad?.fotos?.[0] || '';
         return {
             estado,
             referencia: pago.boldLinkId,
             propiedad_id: reserva?.propiedad_id || '',
-            alojamiento: reserva?.propiedad?.titulo || '',
+            alojamiento: propiedad?.titulo || '',
+            ciudad: propiedad?.ciudad || '',
+            departamento: propiedad?.departamento || '',
+            // Fotos viejas en base64 se entregan por su ruta de imagen para no inflar la respuesta
+            foto_portada: primeraFoto.startsWith('data:')
+                ? `${API_PUBLICA}/propiedades/${reserva.propiedad_id}/foto/0`
+                : primeraFoto,
             check_in: reserva ? fechaColombia(reserva.check_in) : '',
             check_out: reserva ? fechaColombia(reserva.check_out) : '',
             adultos: reserva?.adultos ?? 0,
