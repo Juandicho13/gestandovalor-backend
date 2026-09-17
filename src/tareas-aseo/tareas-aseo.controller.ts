@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Patch, Body, Post } from '@nestjs/common';
+import { Controller, Get, Param, Patch, Body, Post, Delete } from '@nestjs/common';
 import { TareasAseoService } from './tareas-aseo.service';
 
 @Controller('tareas-aseo')
@@ -24,5 +24,11 @@ export class TareasAseoController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateTareaDto: any) {
     return this.tareasAseoService.update(id, updateTareaDto);
+  }
+
+  // ✨ Elimina el reporte de novedad (texto y fotos) de una tarea
+  @Delete(':id/novedad')
+  eliminarNovedad(@Param('id') id: string) {
+    return this.tareasAseoService.eliminarNovedad(id);
   }
 }

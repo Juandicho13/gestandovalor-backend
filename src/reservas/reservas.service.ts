@@ -71,7 +71,7 @@ export class ReservasService {
   async ocupacionPublica(propiedad_id: string) {
     await liberarReservasVencidas(this.prisma);
     return this.prisma.reserva.findMany({
-      where: { propiedad_id, estado_reserva: { not: ESTADO_CANCELADA } },
+      where: { propiedad_id, estado_reserva: { notIn: [ESTADO_CANCELADA, ESTADO_PAGO_EN_PROCESO] } },
       select: { check_in: true, check_out: true },
     });
   }
@@ -89,21 +89,9 @@ export class ReservasService {
     return this.prisma.reserva.update({ where: { id }, data });
   }
 
+  // Borrado libre desde el panel: primero los pagos asociados y luego la reserva.
+  // El registro del cobro sigue disponible en el panel de Bold con su referencia.
   async remove(id: string) {
-    // Si la reserva tiene un pago aprobado no borramos el registro del dinero:
-    // la cancelamos y desaparece del calendario.
-    const pagosAprobados = await this.prisma.pago.count({
-      where: { reservaId: id, estado: 'APROBADA' },
-    });
-
-    if (pagosAprobados > 0) {
-      return this.prisma.reserva.update({
-        where: { id },
-        data: { estado_reserva: ESTADO_CANCELADA },
-      });
-    }
-
-    // Sin pagos aprobados: se borran primero los intentos de pago y luego la reserva
     const [, reserva] = await this.prisma.$transaction([
       this.prisma.pago.deleteMany({ where: { reservaId: id } }),
       this.prisma.reserva.delete({ where: { id } }),

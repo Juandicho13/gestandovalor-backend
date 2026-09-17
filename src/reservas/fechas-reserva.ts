@@ -48,7 +48,9 @@ export async function buscarReservasQueSeCruzan(
     const candidatas = await prisma.reserva.findMany({
         where: {
             ...(propiedadId ? { propiedad_id: propiedadId } : {}),
-            estado_reserva: { not: ESTADO_CANCELADA },
+            // Solo bloquean fechas las reservas confirmadas o creadas desde el panel.
+            // Un pago en proceso, rechazado o con error no aparta nada.
+            estado_reserva: { notIn: [ESTADO_CANCELADA, ESTADO_PAGO_EN_PROCESO] },
             check_in: { lt: new Date(`${salida}T23:59:59-05:00`) },
             check_out: { gt: new Date(`${llegada}T00:00:00-05:00`) },
         },
