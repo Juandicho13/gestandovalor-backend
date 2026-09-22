@@ -51,10 +51,23 @@ export class PropiedadesService {
   }
 
 
+  // Borrado completo. Reservas, aseos, liquidaciones y tarifas ya tienen
+  // onDelete: Cascade, pero los Pagos cuelgan de la Reserva SIN cascade,
+  // asi que hay que quitarlos antes o la base rechaza el borrado.
   async remove(id: string) {
-    return await this.prisma.propiedad.delete({
-      where: { id }
+    const reservas = await this.prisma.reserva.findMany({
+      where: { propiedad_id: id },
+      select: { id: true },
     });
+
+    const [, propiedad] = await this.prisma.$transaction([
+      this.prisma.pago.deleteMany({
+        where: { reservaId: { in: reservas.map((r) => r.id) } },
+      }),
+      this.prisma.propiedad.delete({ where: { id } }),
+    ]);
+
+    return propiedad;
   }
 
   // ✨ NUEVA FUNCIÓN OPTIMIZADA PARA RESULTADOS ✨
