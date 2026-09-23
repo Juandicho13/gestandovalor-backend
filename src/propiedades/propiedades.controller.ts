@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res, req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Req } from '@nestjs/common';
 import type { Response } from 'express';
 import { PropiedadesService } from './propiedades.service';
 import { Publico } from '../auth/seguridad';
@@ -28,6 +28,7 @@ export class PropiedadesController {
     const soloMias = usuario?.rol === 'PROPIETARIO' ? usuario.sub : undefined;
     return this.propiedadesService.findAll(soloMias);
   }
+
   @Publico()
   @Get('ciudades')
   obtenerCiudades() {
