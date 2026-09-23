@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Req } from '@nestjs/common';
 import { ReservasService } from './reservas.service';
 import { Publico } from '../auth/seguridad';
 
@@ -37,8 +37,10 @@ export class ReservasController {
   }
 
   @Get()
-  findAll() {
-    return this.reservasService.findAll();
+  findAll(@Req() req: any) {
+    const usuario = req.usuario;
+    const soloMias = usuario?.rol === 'PROPIETARIO' ? usuario.sub : undefined;
+    return this.reservasService.findAll(soloMias);
   }
 
   @Get('propiedad/:id')

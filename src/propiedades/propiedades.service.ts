@@ -15,8 +15,12 @@ export class PropiedadesService {
     return await this.prisma.propiedad.create({ data });
   }
 
-  async findAll() {
+  // Si quien pregunta es un PROPIETARIO, solo ve las suyas.
+  // Antes el servidor mandaba todas y el navegador escondía el resto,
+  // así que con abrir F12 se veían los apartamentos ajenos con sus claves.
+  async findAll(propietarioId?: string) {
     return await this.prisma.propiedad.findMany({
+      where: propietarioId ? { propietario_id: propietarioId } : undefined,
       orderBy: { created_at: 'desc' }
     });
   }

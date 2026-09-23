@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, req } from '@nestjs/common';
 import type { Response } from 'express';
 import { PropiedadesService } from './propiedades.service';
 import { Publico } from '../auth/seguridad';
+
 
 @Controller('propiedades')
 export class PropiedadesController {
@@ -21,10 +22,12 @@ export class PropiedadesController {
   }
 
   @Get()
-  findAll() {
-    return this.propiedadesService.findAll();
+  findAll(@Req() req: any) {
+    // El token dice quién es. Un PROPIETARIO solo recibe sus apartamentos.
+    const usuario = req.usuario;
+    const soloMias = usuario?.rol === 'PROPIETARIO' ? usuario.sub : undefined;
+    return this.propiedadesService.findAll(soloMias);
   }
-
   @Publico()
   @Get('ciudades')
   obtenerCiudades() {

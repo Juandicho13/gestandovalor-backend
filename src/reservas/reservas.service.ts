@@ -49,10 +49,14 @@ export class ReservasService {
   }
 
   // Panel: no mostramos canceladas ni pagos que aún no se completan
-  async findAll() {
+  // Un PROPIETARIO solo ve las reservas de sus propios apartamentos
+  async findAll(propietarioId?: string) {
     await liberarReservasVencidas(this.prisma);
     return this.prisma.reserva.findMany({
-      where: { estado_reserva: { notIn: [ESTADO_CANCELADA, ESTADO_PAGO_EN_PROCESO] } },
+      where: {
+        estado_reserva: { notIn: [ESTADO_CANCELADA, ESTADO_PAGO_EN_PROCESO] },
+        ...(propietarioId ? { propiedad: { propietario_id: propietarioId } } : {}),
+      },
       orderBy: { check_out: 'asc' }
     });
   }
