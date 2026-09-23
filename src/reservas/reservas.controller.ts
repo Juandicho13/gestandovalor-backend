@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { ReservasService } from './reservas.service';
+import { Publico } from '../auth/seguridad';
 
 @Controller('reservas')
 export class ReservasController {
@@ -17,11 +18,13 @@ export class ReservasController {
   }
 
   // --- RUTAS PÚBLICAS DE DISPONIBILIDAD (sin datos de huéspedes) ---
+  @Publico()
   @Get('ocupacion/:id')
   ocupacion(@Param('id') id: string) {
     return this.reservasService.ocupacionPublica(id);
   }
 
+  @Publico()
   @Get('ocupadas')
   ocupadas(@Query('in') llegada: string, @Query('out') salida: string) {
     return this.reservasService.propiedadesOcupadas(llegada, salida);

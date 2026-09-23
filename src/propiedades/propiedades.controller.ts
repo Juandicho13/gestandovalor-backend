@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { PropiedadesService } from './propiedades.service';
+import { Publico } from '../auth/seguridad';
 
 @Controller('propiedades')
 export class PropiedadesController {
@@ -24,11 +25,13 @@ export class PropiedadesController {
     return this.propiedadesService.findAll();
   }
 
+  @Publico()
   @Get('ciudades')
   obtenerCiudades() {
     return this.propiedadesService.obtenerCiudades();
   }
 
+  @Publico()
   @Get('resultados')
   obtenerResultadosBusqueda() {
     return this.propiedadesService.obtenerResultadosBusqueda();
@@ -39,6 +42,7 @@ export class PropiedadesController {
     return this.propiedadesService.obtenerListaAdmin();
   }
 
+  @Publico()
   @Get(':id/foto/:indice')
   async obtenerFoto(
     @Param('id') id: string,
@@ -59,6 +63,7 @@ export class PropiedadesController {
   }
 
   // Página pública de la suite: nunca enviamos claves de Wi-Fi, cerradura ni inventario
+  @Publico()
   @Get(':id/detalle')
   async obtenerDetalleSuite(@Param('id') id: string) {
     const propiedad: Record<string, unknown> = {

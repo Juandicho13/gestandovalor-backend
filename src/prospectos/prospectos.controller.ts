@@ -2,11 +2,13 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { ProspectosService } from './prospectos.service';
 import { CreateProspectoDto } from './dto/create-prospecto.dto';
 import { UpdateProspectoDto } from './dto/update-prospecto.dto';
+import { Publico } from '../auth/seguridad';
 
 @Controller('prospectos')
 export class ProspectosController {
   constructor(private readonly prospectosService: ProspectosService) { }
 
+  @Publico()
   @Post()
   create(@Body() createProspectoDto: CreateProspectoDto) {
     return this.prospectosService.create(createProspectoDto);

@@ -1,22 +1,26 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { BlogService } from './blog.service';
+import { Publico } from '../auth/seguridad';
 
 @Controller('blog')
 export class BlogController {
   constructor(private readonly blogService: BlogService) { }
 
   // --- PÚBLICO (van primero para que no choquen con ':id') ---
+  @Publico()
   @Get('resumen')
   findAllResumen() {
     return this.blogService.findAllResumen();
   }
 
+  @Publico()
   @Get('publico/:id')
   findOnePublico(@Param('id') id: string) {
     return this.blogService.findOnePublico(id);
   }
 
+  @Publico()
   @Get(':id/portada')
   async portada(@Param('id') id: string, @Res() res: Response) {
     const resultado = await this.blogService.obtenerPortada(id);
