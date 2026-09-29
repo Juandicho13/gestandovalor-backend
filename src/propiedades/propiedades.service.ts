@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { createClient } from '@supabase/supabase-js';
 
@@ -43,6 +43,33 @@ export class PropiedadesService {
       // El motivo real (la última línea del error de Prisma) llega al panel para saber qué pasó
       const motivo = String((error as any)?.message || '').trim().split('\n').filter(Boolean).pop() || 'sin detalle';
       throw new HttpException(`Error al actualizar la propiedad: ${motivo}`, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  // Qué puede cambiar cada rol que no es admin (el admin puede cambiar todo)
+  async revisarPermisoDeCambio(id: string, data: any, usuario: any) {
+    const rol = usuario?.rol;
+    if (rol === 'ADMIN') return;
+
+    const permitidos: Record<string, string[]> = {
+      AMA_LLAVES: ['inventario', 'empleado_aseo_id'],
+      ASEO: ['inventario'],
+    };
+    const prohibidos = Object.keys(data || {}).filter((campo) => !(permitidos[rol] || []).includes(campo));
+    if (prohibidos.length) {
+      throw new ForbiddenException(`No tienes permiso para cambiar: ${prohibidos.join(', ')}`);
+    }
+
+    // El equipo de aseo solo toca el inventario del apartamento que tiene asignado ahora
+    if (rol === 'ASEO') {
+      const tareas = await this.prisma.tareasAseo.findMany({
+        where: { propiedad_id: id, empleado_id: usuario.sub },
+        select: { estado: true },
+      });
+      const activo = tareas.some((t) => ['pendiente', 'en progreso', 'en pausa'].includes(String(t.estado).toLowerCase()));
+      if (!activo) {
+        throw new ForbiddenException('Solo puedes actualizar el inventario del apartamento que estás limpiando');
+      }
     }
   }
 
@@ -160,7 +187,8 @@ export class PropiedadesService {
 
     const { error } = await this.supabase.storage
       .from('fotos-propiedades')
-      .upload(nombre, buffer, { contentType: mime });
+      // Cada foto tiene nombre único, así que el navegador la puede guardar un año sin volver a pedirla
+      .upload(nombre, buffer, { contentType: mime, cacheControl: '31536000' });
 
     if (error) {
       throw new HttpException(

@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { BlogService } from './blog.service';
-import { Publico } from '../auth/seguridad';
+import { Publico, Roles } from '../auth/seguridad';
 
 @Controller('blog')
 export class BlogController {
@@ -37,27 +37,32 @@ export class BlogController {
     res.end(resultado.buffer);
   }
 
-  // --- PANEL ---
+  // --- PANEL (solo el admin escribe y edita el blog) ---
+  @Roles('ADMIN')
   @Post()
   create(@Body() createBlogDto: any) {
     return this.blogService.create(createBlogDto);
   }
 
+  @Roles('ADMIN')
   @Get()
   findAll() {
     return this.blogService.findAll();
   }
 
+  @Roles('ADMIN')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.blogService.findOne(id);
   }
 
+  @Roles('ADMIN')
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateBlogDto: any) {
     return this.blogService.update(id, updateBlogDto);
   }
 
+  @Roles('ADMIN')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.blogService.remove(id);

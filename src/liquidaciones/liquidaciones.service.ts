@@ -1,9 +1,9 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class LiquidacionesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async subirLiquidacion(body: any) {
     try {
@@ -36,6 +36,15 @@ export class LiquidacionesService {
       console.error("💥 Error al guardar liquidacion:", error);
       throw new HttpException('Error al procesar la liquidación', HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  // Un propietario solo puede ver los reportes de sus propios apartamentos
+  async revisarQueSeaSuya(propiedadId: string, propietarioId: string) {
+    const propia = await this.prisma.propiedad.findFirst({
+      where: { id: propiedadId, propietario_id: propietarioId },
+      select: { id: true },
+    });
+    if (!propia) throw new ForbiddenException('Este apartamento no es tuyo');
   }
 
   async obtenerPorPropiedad(propiedadId: string) {

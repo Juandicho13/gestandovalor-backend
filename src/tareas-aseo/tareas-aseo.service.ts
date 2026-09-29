@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { createClient } from '@supabase/supabase-js';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -54,6 +54,31 @@ export class TareasAseoService {
       where: { id },
       data,
     });
+  }
+
+  // El equipo de aseo solo actualiza sus propios aseos y no puede aprobar la inspección
+  async revisarCambioDelEmpleado(id: string, data: any, empleadoId: string) {
+    const tarea = await this.prisma.tareasAseo.findUnique({
+      where: { id },
+      select: { empleado_id: true, estado: true },
+    });
+    if (!tarea || tarea.empleado_id !== empleadoId) {
+      throw new ForbiddenException('Este aseo no está asignado a ti');
+    }
+    if (String(tarea.estado).toLowerCase() === 'inspeccionada') {
+      throw new ForbiddenException('Este aseo ya fue inspeccionado');
+    }
+
+    const permitidos = ['estado', 'tiempo_segundos', 'completed_at', 'reporte_empleado', 'novedad_reportada', 'fotos'];
+    const prohibidos = Object.keys(data || {}).filter((campo) => !permitidos.includes(campo));
+    if (prohibidos.length) {
+      throw new ForbiddenException(`No tienes permiso para cambiar: ${prohibidos.join(', ')}`);
+    }
+
+    const estadosDelEmpleado = ['pendiente', 'en progreso', 'en pausa', 'completada'];
+    if (data?.estado !== undefined && !estadosDelEmpleado.includes(String(data.estado).toLowerCase())) {
+      throw new ForbiddenException('Solo la ama de llaves puede poner el aseo en ese estado');
+    }
   }
 
   // ✨ Elimina el reporte de novedad (texto y fotos) sin borrar la tarea de aseo

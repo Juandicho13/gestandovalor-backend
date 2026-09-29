@@ -1,21 +1,27 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Req } from '@nestjs/common';
 import type { Response } from 'express';
 import { PropiedadesService } from './propiedades.service';
-import { Publico } from '../auth/seguridad';
+import { Publico, Roles } from '../auth/seguridad';
 
 
 @Controller('propiedades')
 export class PropiedadesController {
   constructor(private readonly propiedadesService: PropiedadesService) { }
 
+  @Roles('ADMIN')
   @Post()
   create(@Body() body: any) {
     return this.propiedadesService.create(body);
   }
+
+  // Subir fotos: el admin (editor), la ama de llaves y el equipo de aseo (fotos de novedades)
+  @Roles('ADMIN', 'AMA_LLAVES', 'ASEO')
   @Post('subir-foto')
   subirFoto(@Body() body: { imagen: string; propiedadId?: string }) {
     return this.propiedadesService.subirFoto(body.imagen, body.propiedadId);
   }
+
+  @Roles('ADMIN', 'AMA_LLAVES', 'ASEO')
   @Post('url-subida')
   crearUrlSubida(@Body() body: { extension?: string; propiedadId?: string }) {
     return this.propiedadesService.crearUrlSubida(body.extension ?? 'webp', body.propiedadId);
@@ -41,6 +47,7 @@ export class PropiedadesController {
     return this.propiedadesService.obtenerResultadosBusqueda();
   }
 
+  @Roles('ADMIN')
   @Get('admin')
   obtenerListaAdmin() {
     return this.propiedadesService.obtenerListaAdmin();
@@ -79,16 +86,22 @@ export class PropiedadesController {
     return propiedad;
   }
 
+  @Roles('ADMIN')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.propiedadesService.findOne(id);
   }
 
+  // El admin cambia todo. La ama de llaves solo el inventario y el personal fijo.
+  // El equipo de aseo solo el inventario del apartamento que está limpiando.
+  @Roles('ADMIN', 'AMA_LLAVES', 'ASEO')
   @Patch(':id')
-  update(@Param('id') id: string, @Body() body: any) {
+  async update(@Param('id') id: string, @Body() body: any, @Req() req: any) {
+    await this.propiedadesService.revisarPermisoDeCambio(id, body, req.usuario);
     return this.propiedadesService.update(id, body);
   }
 
+  @Roles('ADMIN')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.propiedadesService.remove(id);
