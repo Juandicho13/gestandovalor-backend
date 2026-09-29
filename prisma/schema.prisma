@@ -207,6 +207,10 @@ model TareasAseo {
 
   created_at   DateTime  @default(now())
   completed_at DateTime?
+
+  // ✨ Día en que toca el aseo (la salida de la reserva) y la reserva que lo originó
+  fecha_aseo DateTime?
+  reserva_id String?
 }
 
 // ==========================================

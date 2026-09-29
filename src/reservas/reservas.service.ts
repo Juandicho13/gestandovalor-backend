@@ -48,7 +48,6 @@ export class ReservasService {
     return nuevaReserva;
   }
 
-  // Panel: no mostramos canceladas ni pagos que aún no se completan
   // Un PROPIETARIO solo ve las reservas de sus propios apartamentos
   async findAll(propietarioId?: string) {
     await liberarReservasVencidas(this.prisma);
@@ -90,7 +89,15 @@ export class ReservasService {
   }
 
   async update(id: string, data: any) {
-    return this.prisma.reserva.update({ where: { id }, data });
+    const reserva = await this.prisma.reserva.update({ where: { id }, data });
+    // Si cambió la salida, el aseo pendiente de esa reserva se mueve al nuevo día
+    if (data?.check_out) {
+      await this.prisma.tareasAseo.updateMany({
+        where: { reserva_id: id, estado: { notIn: ['Completada', 'Inspeccionada'] } },
+        data: { fecha_aseo: reserva.check_out },
+      });
+    }
+    return reserva;
   }
 
   // Borrado libre desde el panel: primero los pagos asociados y luego la reserva.
@@ -111,13 +118,23 @@ export class ReservasService {
   }
 
   async crearAseo(data: any) {
+    // Si esa reserva ya tiene su aseo, no se crea otro (doble clic o dos pestañas agendando a la vez)
+    if (data.reserva_id) {
+      const existente = await this.prisma.tareasAseo.findFirst({ where: { reserva_id: String(data.reserva_id) } });
+      if (existente) return existente;
+    }
+
+    const fecha = data.fecha_aseo ? new Date(data.fecha_aseo) : null;
     return await this.prisma.tareasAseo.create({
       data: {
         propiedad_id: String(data.propiedad_id),
         empleado_id: String(data.empleado_id),
         urgencia: String(data.urgencia || 'Normal'),
         estado: 'Pendiente',
-        tiempo_segundos: 0
+        tiempo_segundos: 0,
+        // ✨ El aseo es el día de la salida: con esto se ordena la agenda del equipo
+        fecha_aseo: fecha && !isNaN(fecha.getTime()) ? fecha : null,
+        reserva_id: data.reserva_id ? String(data.reserva_id) : null,
       }
     });
   }

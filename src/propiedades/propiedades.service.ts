@@ -40,7 +40,9 @@ export class PropiedadesService {
       });
     } catch (error) {
       console.error("Error al actualizar la propiedad:", error);
-      throw new HttpException('Error al actualizar la propiedad', HttpStatus.INTERNAL_SERVER_ERROR);
+      // El motivo real (la última línea del error de Prisma) llega al panel para saber qué pasó
+      const motivo = String((error as any)?.message || '').trim().split('\n').filter(Boolean).pop() || 'sin detalle';
+      throw new HttpException(`Error al actualizar la propiedad: ${motivo}`, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
