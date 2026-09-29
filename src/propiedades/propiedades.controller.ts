@@ -66,14 +66,14 @@ export class PropiedadesController {
     res.end(buffer);
   }
 
-  // Página pública de la suite: nunca enviamos claves de Wi-Fi, cerradura ni inventario
+  // Página pública de la suite: nunca enviamos claves de Wi-Fi, cerradura, número del apto ni inventario
   @Publico()
   @Get(':id/detalle')
   async obtenerDetalleSuite(@Param('id') id: string) {
     const propiedad: Record<string, unknown> = {
       ...(await this.propiedadesService.obtenerDetalleSuite(id)),
     };
-    for (const campo of ['wifi_red', 'wifi_pass', 'cerradura_codigo', 'inventario', 'propietario_id']) {
+    for (const campo of ['wifi_red', 'wifi_pass', 'cerradura_codigo', 'numero_alojamiento', 'inventario', 'propietario_id']) {
       delete propiedad[campo];
     }
     return propiedad;

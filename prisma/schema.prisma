@@ -88,6 +88,7 @@ model Propiedad {
   wifi_red         String?
   wifi_pass        String?
   cerradura_codigo String?
+  numero_alojamiento String? // Número del apto (ej: 313). Solo lo ve el admin
 
   // Enlaces de OTA's
   link_airbnb  String?
@@ -97,7 +98,7 @@ model Propiedad {
   lat Float?
   lng Float?
 
-    // Relaciones
+  // Relaciones
   propietario_id String?
   propietario    Usuario? @relation("PropietarioPropiedad", fields: [propietario_id], references: [id])
 
