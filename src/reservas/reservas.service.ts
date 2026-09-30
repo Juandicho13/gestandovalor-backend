@@ -1,10 +1,12 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { conUrgenciaActual } from '../tareas-aseo/urgencia';
 import {
   ESTADO_CANCELADA,
   ESTADO_PAGO_EN_PROCESO,
   buscarReservasQueSeCruzan,
   esFechaValida,
+  fechaColombia,
   liberarReservasVencidas,
 } from './fechas-reserva';
 
@@ -89,12 +91,55 @@ export class ReservasService {
   }
 
   async update(id: string, data: any) {
+    const anterior = await this.prisma.reserva.findUnique({
+      where: { id },
+      select: { propiedad_id: true, check_in: true, check_out: true },
+    });
+    if (!anterior) throw new NotFoundException('La reserva no existe');
+
+    // ✨ La reserva se puede pasar a otro apartamento (por ejemplo, si hay un daño en el que tenía)
+    const propiedadNueva = data?.propiedad_id ? String(data.propiedad_id) : anterior.propiedad_id;
+    const cambiaApto = propiedadNueva !== anterior.propiedad_id;
+    const llegada = data?.check_in ? new Date(data.check_in) : anterior.check_in;
+    const salida = data?.check_out ? new Date(data.check_out) : anterior.check_out;
+    if (isNaN(llegada.getTime()) || isNaN(salida.getTime())) {
+      throw new BadRequestException('Fechas inválidas');
+    }
+    const cambianFechas =
+      fechaColombia(llegada) !== fechaColombia(anterior.check_in) ||
+      fechaColombia(salida) !== fechaColombia(anterior.check_out);
+
+    // Si cambia de apartamento o de noches, el apartamento de destino tiene que estar libre
+    if (cambiaApto || cambianFechas) {
+      if (cambiaApto) {
+        const existe = await this.prisma.propiedad.findUnique({ where: { id: propiedadNueva }, select: { id: true } });
+        if (!existe) throw new BadRequestException('El apartamento elegido no existe');
+      }
+      const cruces = (
+        await buscarReservasQueSeCruzan(this.prisma, fechaColombia(llegada), fechaColombia(salida), propiedadNueva)
+      ).filter((r) => r.id !== id);
+      if (cruces.length > 0) {
+        throw new ConflictException('Esas fechas ya están ocupadas en ese apartamento');
+      }
+    }
+
     const reserva = await this.prisma.reserva.update({ where: { id }, data });
-    // Si cambió la salida, el aseo pendiente de esa reserva se mueve al nuevo día
-    if (data?.check_out) {
+
+    // El aseo pendiente de esa reserva se mueve con ella: al nuevo día de salida y al nuevo apartamento
+    if (data?.check_out || cambiaApto) {
+      const cambiosAseo: Record<string, unknown> = { fecha_aseo: reserva.check_out };
+      if (cambiaApto) {
+        cambiosAseo.propiedad_id = reserva.propiedad_id;
+        // Si el apartamento nuevo tiene su persona de aseo fija, el aseo pasa a esa persona
+        const prop = await this.prisma.propiedad.findUnique({
+          where: { id: reserva.propiedad_id },
+          select: { empleado_aseo_id: true },
+        });
+        if (prop?.empleado_aseo_id) cambiosAseo.empleado_id = prop.empleado_aseo_id;
+      }
       await this.prisma.tareasAseo.updateMany({
         where: { reserva_id: id, estado: { notIn: ['Completada', 'Inspeccionada'] } },
-        data: { fecha_aseo: reserva.check_out },
+        data: cambiosAseo,
       });
     }
     return reserva;
@@ -112,9 +157,11 @@ export class ReservasService {
 
   // 🐴 --- CABALLO DE TROYA PARA ASEOS --- 🐴
   async obtenerAseos() {
-    return await this.prisma.tareasAseo.findMany({
+    const tareas = await this.prisma.tareasAseo.findMany({
       orderBy: { created_at: 'desc' }
     });
+    // La prioridad se recalcula con las reservas de hoy (ver urgencia.ts)
+    return conUrgenciaActual(this.prisma, tareas);
   }
 
   async crearAseo(data: any) {

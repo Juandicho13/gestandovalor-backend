@@ -1,6 +1,7 @@
 import { Injectable, HttpException, HttpStatus, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { createClient } from '@supabase/supabase-js';
 import { PrismaService } from '../prisma/prisma.service';
+import { conUrgenciaActual } from './urgencia';
 
 const BUCKET = 'fotos-propiedades';
 
@@ -34,25 +35,39 @@ export class TareasAseoService {
   }
 
   async findAll() {
-    return await this.prisma.tareasAseo.findMany({
+    const tareas = await this.prisma.tareasAseo.findMany({
       orderBy: { created_at: 'desc' },
       include: {
-        propiedad: { select: { id: true, titulo: true, ciudad: true } },
+        propiedad: { select: { id: true, titulo: true, ciudad: true, numero_alojamiento: true } },
         empleado: { select: { id: true, nombre: true } },
       },
     });
+    return conUrgenciaActual(this.prisma, tareas);
   }
 
   async findByEmpleado(empleado_id: string) {
-    return await this.prisma.tareasAseo.findMany({
+    const tareas = await this.prisma.tareasAseo.findMany({
       where: { empleado_id: String(empleado_id) }
     });
+    return conUrgenciaActual(this.prisma, tareas);
   }
 
   async update(id: string, data: any) {
+    const cambios = { ...(data || {}) };
+    // La hora de inicio la pone solo el servidor: es la que ve el radar del equipo
+    delete cambios.iniciado_at;
+    const estado = String(cambios.estado ?? '').toLowerCase();
+    if (estado === 'en progreso') {
+      // Se guarda la primera vez que arranca; pausar y reanudar no la cambia
+      const actual = await this.prisma.tareasAseo.findUnique({ where: { id }, select: { iniciado_at: true } });
+      if (actual && !actual.iniciado_at) cambios.iniciado_at = new Date();
+    } else if (estado === 'pendiente') {
+      // Si la ama de llaves lo devuelve, el aseo vuelve a empezar desde cero
+      cambios.iniciado_at = null;
+    }
     return this.prisma.tareasAseo.update({
       where: { id },
-      data,
+      data: cambios,
     });
   }
 
@@ -69,7 +84,7 @@ export class TareasAseoService {
       throw new ForbiddenException('Este aseo ya fue inspeccionado');
     }
 
-    const permitidos = ['estado', 'tiempo_segundos', 'completed_at', 'reporte_empleado', 'novedad_reportada', 'fotos'];
+    const permitidos = ['estado', 'tiempo_segundos', 'completed_at', 'reporte_empleado', 'novedad_reportada', 'fotos', 'fotos_finales'];
     const prohibidos = Object.keys(data || {}).filter((campo) => !permitidos.includes(campo));
     if (prohibidos.length) {
       throw new ForbiddenException(`No tienes permiso para cambiar: ${prohibidos.join(', ')}`);

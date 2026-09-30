@@ -211,6 +211,12 @@ model TareasAseo {
   // ✨ Día en que toca el aseo (la salida de la reserva) y la reserva que lo originó
   fecha_aseo DateTime?
   reserva_id String?
+
+  // ✨ Fotos del apartamento ya limpio (aparte de las fotos de daños, que van en "fotos")
+  fotos_finales String[] @default([])
+
+  // ✨ Hora real en que el empleado empezó el aseo. La pone el servidor, no el celular
+  iniciado_at DateTime?
 }
 
 // ==========================================
